@@ -1,10 +1,10 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Window/Event.hpp>
+#include "Cell.h"
 
 int main()
 {
-	sf::RenderWindow window( sf::VideoMode( { 200, 200 } ), "SFML works!" );
-	sf::CircleShape shape( 100.f );
-	shape.setFillColor( sf::Color::Green );
+	sf::RenderWindow window( sf::VideoMode( { 1200, 700 } ), "SFML works!" );
 
 	while ( window.isOpen() )
 	{
@@ -12,10 +12,22 @@ int main()
 		{
 			if ( event->is<sf::Event::Closed>() )
 				window.close();
+
+			// on resized event
+			if ( const auto* resizedEvent = event->getIf<sf::Event::Resized>() )
+			{
+				// created a view from fixed visible area using FloatRect
+				sf::FloatRect visibleArea(sf::Vector2f(0, 0), sf::Vector2f(resizedEvent->size.x, resizedEvent->size.y));
+				window.setView(sf::View(visibleArea));
+			}
+
+
 		}
 
 		window.clear();
-		window.draw( shape );
+		Cell testCell;
+
+		testCell.draw(window);
 		window.display();
 	}
 }
