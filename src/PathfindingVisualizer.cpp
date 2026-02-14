@@ -44,6 +44,6 @@ void PathfindingVisualizer::update()
 void PathfindingVisualizer::draw()
 {
     m_window.clear();
-    m_cell.draw(m_window);
+    m_grid.draw(m_window);
     m_window.display();
 }

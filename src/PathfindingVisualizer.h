@@ -5,7 +5,7 @@
 #ifndef PATHFINDING_PATHFINDING_H
 #define PATHFINDING_PATHFINDING_H
 
-#include "Cell.h"
+#include "Grid.h"
 #include "SFML/Graphics/RenderWindow.hpp"
 
 
@@ -23,7 +23,7 @@ public:
 private:
 
     sf::RenderWindow m_window;
-    Cell m_cell;
+    Grid m_grid;
 };
 
 

@@ -9,6 +9,7 @@ class Cell
 public:
     Cell();
     void draw(sf::RenderWindow& window) const;
+    void setSquarePosition(const sf::Vector2f& pos);
 
 private:
     sf::RectangleShape m_square;
