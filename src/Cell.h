@@ -1,12 +1,8 @@
-//
-// Created by hoang on 2/13/2026.
-//
-
 #ifndef PATHFINDING_CELL_H
 #define PATHFINDING_CELL_H
+
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
-
 
 class Cell
 {

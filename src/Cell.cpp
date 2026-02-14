@@ -5,6 +5,7 @@
 #include "Cell.h"
 
 Cell::Cell()
+    : m_bBlocked{false}
 {
     m_square.setSize(sf::Vector2f(50, 50));
 }
