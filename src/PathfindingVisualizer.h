@@ -21,9 +21,10 @@ public:
     void draw();
 
 private:
-
     sf::RenderWindow m_window;
     Grid m_grid;
+
+    void handleMouseButtonPressed(const sf::Event::MouseButtonPressed& mouseEvent);
 };
 
 

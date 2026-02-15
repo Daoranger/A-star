@@ -8,8 +8,10 @@ class Cell
 {
 public:
     Cell();
-    void draw(sf::RenderWindow& window) const;
+    void draw(sf::RenderWindow& window);
     void setSquarePosition(const sf::Vector2f& pos);
+    void setbBlocked(bool bBlocked);
+    bool getbBlocked();
 
 private:
     sf::RectangleShape m_square;

@@ -3,10 +3,11 @@
 //
 
 #include "Grid.h"
+#include <iostream>
 
 Grid::Grid()
-    : m_rows{ 20 }
-    , m_cols{ 20 }
+    : m_rows{ 50 }
+    , m_cols{ 50 }
     , m_grid(m_rows, std::vector<Cell>(m_cols))
 {
 }
@@ -22,3 +23,20 @@ void Grid::draw(sf::RenderWindow &window)
         }
     }
 }
+
+std::size_t Grid::getRows()
+{
+    return m_rows;
+}
+
+std::size_t Grid::getCols()
+{
+    return m_cols;
+}
+
+void Grid::toggleCellBlocked(std::size_t row, std::size_t col)
+{
+    std::cout << "row=" << row << ", col=" << col << '\n';
+    m_grid[row][col].setbBlocked(!m_grid[row][col].getbBlocked());
+}
+

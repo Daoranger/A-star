@@ -14,6 +14,9 @@ class Grid
 public:
     Grid();
     void draw(sf::RenderWindow& window);
+    std::size_t getRows();
+    std::size_t getCols();
+    void toggleCellBlocked(std::size_t row, std::size_t col);
 
 private:
     std::size_t m_rows;
