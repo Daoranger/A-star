@@ -45,6 +45,8 @@ void PathfindingVisualizer::processEvents()
 
 void PathfindingVisualizer::update()
 {
+    // nothing in update right now
+    return;
 }
 
 void PathfindingVisualizer::draw()

@@ -10,8 +10,8 @@ public:
     Cell();
     void draw(sf::RenderWindow& window);
     void setSquarePosition(const sf::Vector2f& pos);
-    void setbBlocked(bool bBlocked);
-    bool getbBlocked();
+    void setbBlocked(const bool bBlocked);
+    bool getbBlocked() const;
 
 private:
     sf::RectangleShape m_square;

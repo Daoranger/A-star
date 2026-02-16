@@ -24,12 +24,12 @@ void Grid::draw(sf::RenderWindow &window)
     }
 }
 
-std::size_t Grid::getRows()
+std::size_t Grid::getRows() const
 {
     return m_rows;
 }
 
-std::size_t Grid::getCols()
+std::size_t Grid::getCols() const
 {
     return m_cols;
 }

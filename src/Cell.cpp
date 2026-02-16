@@ -29,12 +29,12 @@ void Cell::setSquarePosition(const sf::Vector2f &pos)
     m_square.setPosition(pos);
 }
 
-void Cell::setbBlocked(bool bBlocked)
+void Cell::setbBlocked(const bool bBlocked)
 {
     m_bBlocked = bBlocked;
 }
 
-bool Cell::getbBlocked()
+bool Cell::getbBlocked() const
 {
     return m_bBlocked;
 }
