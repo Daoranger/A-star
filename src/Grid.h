@@ -17,6 +17,7 @@ public:
     void draw(sf::RenderWindow& window);
     [[nodiscard]] std::size_t getRows() const;
     [[nodiscard]] std::size_t getCols() const;
+    [[nodiscard]] float getCellSize() const;
     void toggleCellBlocked(std::size_t row, std::size_t col);
 
 private:

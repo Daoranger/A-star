@@ -20,5 +20,4 @@ private:
 
 };
 
-
 #endif //PATHFINDING_CELL_H

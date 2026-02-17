@@ -7,6 +7,7 @@
 
 PathfindingVisualizer::PathfindingVisualizer()
     : m_window(sf::VideoMode( { 1200, 700 } ), "SFML works!")
+    , m_grid(10, 10, 50)
 {
 }
 
@@ -59,8 +60,8 @@ void PathfindingVisualizer::draw()
 void PathfindingVisualizer::handleMouseButtonPressed(const sf::Event::MouseButtonPressed& mouseEvent)
 {
     std::cout << "(" << mouseEvent.position.x << ", " << mouseEvent.position.y << ")\n";
-    int row = mouseEvent.position.x / 50;
-    int col = mouseEvent.position.y / 50;
+    const int row = mouseEvent.position.x / m_grid.getCellSize();
+    const int col = mouseEvent.position.y / m_grid.getCellSize();
 
     // if clicking outside the grid
     if (row >= m_grid.getRows() || col >= m_grid.getCols())

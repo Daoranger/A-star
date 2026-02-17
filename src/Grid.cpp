@@ -27,7 +27,7 @@ void Grid::draw(sf::RenderWindow &window)
     {
         for (std::size_t col = 0; col < m_cols; ++col)
         {
-            m_grid[row][col].setSquarePosition(sf::Vector2f(static_cast<float>(50 * row), static_cast<float>(50 * col)));
+            m_grid[row][col].setSquarePosition(sf::Vector2f(static_cast<float>(m_cellSize * row), static_cast<float>(m_cellSize * col)));
             m_grid[row][col].draw(window);
         }
     }
@@ -41,6 +41,11 @@ std::size_t Grid::getRows() const
 std::size_t Grid::getCols() const
 {
     return m_cols;
+}
+
+float Grid::getCellSize() const
+{
+    return m_cellSize;
 }
 
 void Grid::toggleCellBlocked(std::size_t row, std::size_t col)
