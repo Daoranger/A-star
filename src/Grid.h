@@ -13,14 +13,16 @@ class Grid
 {
 public:
     Grid();
+    Grid(std::size_t rows, std::size_t cols, float cellSize);
     void draw(sf::RenderWindow& window);
-    std::size_t getRows() const;
-    std::size_t getCols() const;
+    [[nodiscard]] std::size_t getRows() const;
+    [[nodiscard]] std::size_t getCols() const;
     void toggleCellBlocked(std::size_t row, std::size_t col);
 
 private:
     std::size_t m_rows;
     std::size_t m_cols;
+    float m_cellSize;
     std::vector<std::vector<Cell>> m_grid;
 
 };

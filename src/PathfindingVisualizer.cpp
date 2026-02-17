@@ -6,7 +6,7 @@
 #include <iostream>
 
 PathfindingVisualizer::PathfindingVisualizer()
-    : m_window{sf::VideoMode( { 1200, 700 } ), "SFML works!"}
+    : m_window(sf::VideoMode( { 1200, 700 } ), "SFML works!")
 {
 }
 

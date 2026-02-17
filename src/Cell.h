@@ -8,9 +8,10 @@ class Cell
 {
 public:
     Cell();
+    explicit Cell(float cellSize);
     void draw(sf::RenderWindow& window);
     void setSquarePosition(const sf::Vector2f& pos);
-    void setbBlocked(const bool bBlocked);
+    void setbBlocked(bool bBlocked);
     bool getbBlocked() const;
 
 private:

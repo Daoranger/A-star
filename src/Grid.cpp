@@ -6,9 +6,18 @@
 #include <iostream>
 
 Grid::Grid()
-    : m_rows{ 50 }
-    , m_cols{ 50 }
-    , m_grid(m_rows, std::vector<Cell>(m_cols))
+    : m_rows(20)
+    , m_cols(20)
+    , m_cellSize(50)
+    , m_grid(m_rows, std::vector<Cell>(m_cols, Cell(m_cellSize)))
+{
+}
+
+Grid::Grid(std::size_t rows, std::size_t cols, float cellSize)
+    : m_rows(rows)
+    , m_cols(cols)
+    , m_cellSize(cellSize)
+    , m_grid(m_rows, std::vector<Cell>(m_cols, Cell(m_cellSize)))
 {
 }
 
