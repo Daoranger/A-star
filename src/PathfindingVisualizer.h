@@ -19,12 +19,12 @@ public:
     void processEvents();
     void update();
     void draw();
+    void handleMouseButtonPressed(const sf::Event::MouseButtonPressed& mouseEvent);
 
 private:
     sf::RenderWindow m_window;
     Grid m_grid;
-
-    void handleMouseButtonPressed(const sf::Event::MouseButtonPressed& mouseEvent);
+    CellType currentCellType {CellType::obstacle};
 };
 
 

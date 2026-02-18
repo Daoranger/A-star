@@ -8,7 +8,6 @@
 #include <vector>
 #include "Cell.h"
 
-
 class Grid
 {
 public:
@@ -18,13 +17,14 @@ public:
     [[nodiscard]] std::size_t getRows() const;
     [[nodiscard]] std::size_t getCols() const;
     [[nodiscard]] float getCellSize() const;
-    void toggleCellBlocked(std::size_t row, std::size_t col);
 
 private:
     std::size_t m_rows;
     std::size_t m_cols;
     float m_cellSize;
-    std::vector<std::vector<Cell>> m_grid;
+
+public:
+    std::vector<std::vector<Cell>> m_cells;
 
 };
 

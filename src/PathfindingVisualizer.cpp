@@ -52,7 +52,7 @@ void PathfindingVisualizer::update()
 
 void PathfindingVisualizer::draw()
 {
-    m_window.clear();
+    m_window.clear(sf::Color::White);
     m_grid.draw(m_window);
     m_window.display();
 }
@@ -70,6 +70,6 @@ void PathfindingVisualizer::handleMouseButtonPressed(const sf::Event::MouseButto
         return;
     }
 
-    m_grid.toggleCellBlocked(row, col);
-
+    // set the cell with this row and col in the m_grid with the current cell type
+    m_grid.m_cells[row][col].setCellType(currentCellType);
 }

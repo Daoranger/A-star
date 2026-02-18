@@ -5,15 +5,14 @@
 #include "Cell.h"
 
 Cell::Cell()
-    : m_bBlocked(false)
+    : m_cellType(CellType::open)
 {
 }
 
 Cell::Cell(const float cellSize)
-    : m_bBlocked(false)
+    : m_cellType(CellType::open)
 {
     m_square.setSize(sf::Vector2f(cellSize, cellSize));
-    m_square.setFillColor(sf::Color::White);
     constexpr auto grey = sf::Color(49, 49, 49);
     m_square.setOutlineColor(grey);
     m_square.setOutlineThickness(5);
@@ -21,10 +20,21 @@ Cell::Cell(const float cellSize)
 
 void Cell::draw(sf::RenderWindow& window)
 {
-    if (getbBlocked())
-        m_square.setFillColor(sf::Color::Black);
-    else
-        m_square.setFillColor(sf::Color::White);
+    switch (m_cellType)
+    {
+        case CellType::start:
+            m_square.setFillColor(sf::Color::Green);
+            break;
+        case CellType::goal:
+            m_square.setFillColor(sf::Color::Red);
+            break;
+        case CellType::obstacle:
+            m_square.setFillColor(sf::Color::Black);
+            break;
+        case CellType::open:
+            m_square.setFillColor(sf::Color::White);
+            break;
+    }
 
     window.draw(m_square);
 }
@@ -34,12 +44,7 @@ void Cell::setSquarePosition(const sf::Vector2f &pos)
     m_square.setPosition(pos);
 }
 
-void Cell::setbBlocked(const bool bBlocked)
+void Cell::setCellType(CellType cellType)
 {
-    m_bBlocked = bBlocked;
-}
-
-bool Cell::getbBlocked() const
-{
-    return m_bBlocked;
+    m_cellType = cellType;
 }

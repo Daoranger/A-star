@@ -3,6 +3,15 @@
 
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include <iostream>
+
+enum class CellType
+{
+    start,
+    goal,
+    obstacle,
+    open,
+};
 
 class Cell
 {
@@ -11,12 +20,11 @@ public:
     explicit Cell(float cellSize);
     void draw(sf::RenderWindow& window);
     void setSquarePosition(const sf::Vector2f& pos);
-    void setbBlocked(bool bBlocked);
-    bool getbBlocked() const;
+    void setCellType(CellType cellType);
 
 private:
     sf::RectangleShape m_square;
-    bool m_bBlocked;
+    CellType m_cellType;
 
 };
 
