@@ -41,6 +41,23 @@ void PathfindingVisualizer::processEvents()
         {
             handleMouseButtonPressed(*mouseButtonPressedEvent);
         }
+
+        if (const auto* keyPressedEvent = event->getIf<sf::Event::KeyPressed>())
+        {
+            if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num1)
+            {
+                currentCellType = CellType::start;
+            }
+            else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num2)
+            {
+                currentCellType = CellType::goal;
+            }
+            else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num3)
+            {
+                currentCellType = CellType::obstacle;
+            }
+
+        }
     }
 }
 
