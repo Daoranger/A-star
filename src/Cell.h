@@ -21,6 +21,7 @@ public:
     void draw(sf::RenderWindow& window);
     void setSquarePosition(const sf::Vector2f& pos);
     void setCellType(CellType cellType);
+    CellType getCellType() const;
 
 private:
     sf::RectangleShape m_square;

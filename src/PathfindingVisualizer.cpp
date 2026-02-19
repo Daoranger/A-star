@@ -6,8 +6,10 @@
 #include <iostream>
 
 PathfindingVisualizer::PathfindingVisualizer()
-    : m_window(sf::VideoMode( { 1200, 700 } ), "SFML works!")
-    , m_grid(10, 10, 50)
+    : m_window(sf::VideoMode( { 1200, 700 } ), "A* Pathfinding")
+    , m_grid(10, 50, 50)
+    , m_bStartSelected(false)
+    , m_bGoalSelected(false)
 {
 }
 
@@ -46,15 +48,15 @@ void PathfindingVisualizer::processEvents()
         {
             if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num1)
             {
-                currentCellType = CellType::start;
+                //m_currentCellType = CellType::start;
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num2)
             {
-                currentCellType = CellType::goal;
+                //m_currentCellType = CellType::goal;
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num3)
             {
-                currentCellType = CellType::obstacle;
+                //m_currentCellType = CellType::obstacle;
             }
 
         }
@@ -63,8 +65,18 @@ void PathfindingVisualizer::processEvents()
 
 void PathfindingVisualizer::update()
 {
-    // nothing in update right now
-    return;
+    if (!m_bStartSelected)
+    {
+        m_currentCellType = CellType::start;
+    }
+    else if (!m_bGoalSelected)
+    {
+        m_currentCellType = CellType::goal;
+    }
+    else
+    {
+        m_currentCellType = CellType::obstacle;
+    }
 }
 
 void PathfindingVisualizer::draw()
@@ -87,6 +99,39 @@ void PathfindingVisualizer::handleMouseButtonPressed(const sf::Event::MouseButto
         return;
     }
 
-    // set the cell with this row and col in the m_grid with the current cell type
-    m_grid.m_cells[row][col].setCellType(currentCellType);
+    // switch case to handle toggling start, goal, and obstacle
+    switch (m_grid.m_cells[row][col].getCellType())
+    {
+        case CellType::open:
+        {
+            if (!m_bStartSelected)
+            {
+                m_bStartSelected = true;
+            }
+            else if (!m_bGoalSelected)
+            {
+                m_bGoalSelected = true;
+            }
+            // set the cell with this row and col in the m_grid with the current cell type
+            m_grid.m_cells[row][col].setCellType(m_currentCellType);
+            break;
+        }
+        case CellType::start:
+        {
+            m_grid.m_cells[row][col].setCellType(CellType::open);
+            m_bStartSelected = false;
+            break;
+        }
+        case CellType::goal:
+        {
+            m_grid.m_cells[row][col].setCellType(CellType::open);
+            m_bGoalSelected = false;
+            break;
+        }
+        case CellType::obstacle:
+        {
+            m_grid.m_cells[row][col].setCellType(CellType::open);
+            break;
+        }
+    }
 }

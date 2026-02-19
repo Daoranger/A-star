@@ -48,3 +48,8 @@ void Cell::setCellType(CellType cellType)
 {
     m_cellType = cellType;
 }
+
+CellType Cell::getCellType() const
+{
+    return m_cellType;
+}

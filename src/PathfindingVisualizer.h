@@ -21,10 +21,14 @@ public:
     void draw();
     void handleMouseButtonPressed(const sf::Event::MouseButtonPressed& mouseEvent);
 
+
 private:
     sf::RenderWindow m_window;
     Grid m_grid;
-    CellType currentCellType {CellType::obstacle};
+    CellType m_currentCellType {CellType::start};
+    bool m_bStartSelected;
+    bool m_bGoalSelected;
+
 };
 
 
