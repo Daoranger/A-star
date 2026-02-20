@@ -10,6 +10,8 @@ PathfindingVisualizer::PathfindingVisualizer()
     , m_grid(10, 50, 50)
     , m_bStartSelected(false)
     , m_bGoalSelected(false)
+    , m_bisDragging(false)
+    , m_bSelecting(true)
 {
 }
 
@@ -41,22 +43,38 @@ void PathfindingVisualizer::processEvents()
         // on mouse button pressed
         if (const auto* mouseButtonPressedEvent = event->getIf<sf::Event::MouseButtonPressed>())
         {
-            handleMouseButtonPressed(*mouseButtonPressedEvent);
+            m_bisDragging = true;
+
         }
 
         if (const auto* keyPressedEvent = event->getIf<sf::Event::KeyPressed>())
         {
             if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num1)
             {
-                //m_currentCellType = CellType::start;
+                if (!m_bSelecting)
+                    m_bSelecting = true;
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num2)
             {
-                //m_currentCellType = CellType::goal;
+                if (m_bSelecting)
+                    m_bSelecting = false;
             }
-            else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num3)
+        }
+
+        if (const auto* mouseButtonReleasedEvent = event->getIf<sf::Event::MouseButtonReleased>())
+        {
+            m_bisDragging = false;
+        }
+
+        if (const auto* mouseMovedEvent = event->getIf<sf::Event::MouseMoved>())
+        {
+            if (m_bisDragging && m_bSelecting)
             {
-                //m_currentCellType = CellType::obstacle;
+                handleSelecting(*mouseMovedEvent);
+            }
+            else if (m_bisDragging && !m_bSelecting)
+            {
+                handleDeslecting(*mouseMovedEvent);
             }
 
         }
@@ -86,7 +104,7 @@ void PathfindingVisualizer::draw()
     m_window.display();
 }
 
-void PathfindingVisualizer::handleMouseButtonPressed(const sf::Event::MouseButtonPressed& mouseEvent)
+void PathfindingVisualizer::handleSelecting(const sf::Event::MouseMoved& mouseEvent)
 {
     std::cout << "(" << mouseEvent.position.x << ", " << mouseEvent.position.y << ")\n";
     const int row = mouseEvent.position.x / m_grid.getCellSize();
@@ -100,38 +118,45 @@ void PathfindingVisualizer::handleMouseButtonPressed(const sf::Event::MouseButto
     }
 
     // switch case to handle toggling start, goal, and obstacle
+    if (m_grid.m_cells[row][col].getCellType() == CellType::open || m_grid.m_cells[row][col].getCellType() == CellType::obstacle)
+    {
+        if (!m_bStartSelected)
+        {
+            m_bStartSelected = true;
+        }
+        else if (!m_bGoalSelected)
+        {
+            m_bGoalSelected = true;
+        }
+        // set the cell with this row and col in the m_grid with the current cell type
+        m_grid.m_cells[row][col].setCellType(m_currentCellType);
+    }
+}
+
+void PathfindingVisualizer::handleDeslecting(const sf::Event::MouseMoved &mouseEvent)
+{
+    std::cout << "(" << mouseEvent.position.x << ", " << mouseEvent.position.y << ")\n";
+    const int row = mouseEvent.position.x / m_grid.getCellSize();
+    const int col = mouseEvent.position.y / m_grid.getCellSize();
+
+    // if clicking outside the grid
+    if (row >= m_grid.getRows() || col >= m_grid.getCols())
+    {
+        std::cout << "Clicking outside the grid\n";
+        return;
+    }
+
     switch (m_grid.m_cells[row][col].getCellType())
     {
-        case CellType::open:
-        {
-            if (!m_bStartSelected)
-            {
-                m_bStartSelected = true;
-            }
-            else if (!m_bGoalSelected)
-            {
-                m_bGoalSelected = true;
-            }
-            // set the cell with this row and col in the m_grid with the current cell type
-            m_grid.m_cells[row][col].setCellType(m_currentCellType);
-            break;
-        }
         case CellType::start:
         {
-            m_grid.m_cells[row][col].setCellType(CellType::open);
             m_bStartSelected = false;
-            break;
         }
         case CellType::goal:
         {
-            m_grid.m_cells[row][col].setCellType(CellType::open);
             m_bGoalSelected = false;
-            break;
-        }
-        case CellType::obstacle:
-        {
-            m_grid.m_cells[row][col].setCellType(CellType::open);
-            break;
         }
     }
+    // switch case to handle toggling start, goal, and obstacle
+    m_grid.m_cells[row][col].setCellType(CellType::open);
 }

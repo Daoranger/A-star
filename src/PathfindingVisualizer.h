@@ -19,7 +19,8 @@ public:
     void processEvents();
     void update();
     void draw();
-    void handleMouseButtonPressed(const sf::Event::MouseButtonPressed& mouseEvent);
+    void handleSelecting(const sf::Event::MouseMoved& mouseEvent);
+    void handleDeslecting(const sf::Event::MouseMoved& mouseEvent);
 
 
 private:
@@ -28,6 +29,8 @@ private:
     CellType m_currentCellType {CellType::start};
     bool m_bStartSelected;
     bool m_bGoalSelected;
+    bool m_bisDragging;
+    bool m_bSelecting;
 
 };
 
