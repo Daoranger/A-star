@@ -19,9 +19,10 @@ public:
     void processEvents();
     void update();
     void draw();
-    void handleSelecting(const sf::Event::MouseMoved& mouseEvent);
-    void handleDeslecting(const sf::Event::MouseMoved& mouseEvent);
+    void handleDragSelecting(const sf::Event::MouseMoved& mouseEvent);
+    void handleClickToggling(const sf::Event::MouseButtonPressed& mouseEvent, const bool bSelecting);
 
+    void handleDragDeselecting(const sf::Event::MouseMoved& mouseEvent);
 
 private:
     sf::RenderWindow m_window;

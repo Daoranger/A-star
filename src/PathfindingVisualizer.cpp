@@ -43,6 +43,7 @@ void PathfindingVisualizer::processEvents()
         // on mouse button pressed
         if (const auto* mouseButtonPressedEvent = event->getIf<sf::Event::MouseButtonPressed>())
         {
+            handleClickToggling(*mouseButtonPressedEvent, m_bSelecting);
             m_bisDragging = true;
 
         }
@@ -70,11 +71,11 @@ void PathfindingVisualizer::processEvents()
         {
             if (m_bisDragging && m_bSelecting)
             {
-                handleSelecting(*mouseMovedEvent);
+                handleDragSelecting(*mouseMovedEvent);
             }
             else if (m_bisDragging && !m_bSelecting)
             {
-                handleDeslecting(*mouseMovedEvent);
+                handleDragDeselecting(*mouseMovedEvent);
             }
 
         }
@@ -104,7 +105,7 @@ void PathfindingVisualizer::draw()
     m_window.display();
 }
 
-void PathfindingVisualizer::handleSelecting(const sf::Event::MouseMoved& mouseEvent)
+void PathfindingVisualizer::handleDragSelecting(const sf::Event::MouseMoved& mouseEvent)
 {
     std::cout << "(" << mouseEvent.position.x << ", " << mouseEvent.position.y << ")\n";
     const int row = mouseEvent.position.x / m_grid.getCellSize();
@@ -133,7 +134,55 @@ void PathfindingVisualizer::handleSelecting(const sf::Event::MouseMoved& mouseEv
     }
 }
 
-void PathfindingVisualizer::handleDeslecting(const sf::Event::MouseMoved &mouseEvent)
+void PathfindingVisualizer::handleClickToggling(const sf::Event::MouseButtonPressed &mouseEvent, const bool isSelecting)
+{
+    std::cout << "(" << mouseEvent.position.x << ", " << mouseEvent.position.y << ")\n";
+    const int row = mouseEvent.position.x / m_grid.getCellSize();
+    const int col = mouseEvent.position.y / m_grid.getCellSize();
+
+    // if clicking outside the grid
+    if (row >= m_grid.getRows() || col >= m_grid.getCols())
+    {
+        std::cout << "Clicking outside the grid\n";
+        return;
+    }
+
+    // switch case to handle toggling start, goal, and obstacle
+    if (isSelecting)
+    {
+        if (m_grid.m_cells[row][col].getCellType() == CellType::open || m_grid.m_cells[row][col].getCellType() == CellType::obstacle)
+        {
+            if (!m_bStartSelected)
+            {
+                m_bStartSelected = true;
+            }
+            else if (!m_bGoalSelected)
+            {
+                m_bGoalSelected = true;
+            }
+            // set the cell with this row and col in the m_grid with the current cell type
+            m_grid.m_cells[row][col].setCellType(m_currentCellType);
+        }
+    }
+    else
+    {
+        switch (m_grid.m_cells[row][col].getCellType())
+        {
+            case CellType::start:
+            {
+                m_bStartSelected = false;
+            }
+            case CellType::goal:
+            {
+                m_bGoalSelected = false;
+            }
+        }
+        // switch case to handle toggling start, goal, and obstacle
+        m_grid.m_cells[row][col].setCellType(CellType::open);
+    }
+}
+
+void PathfindingVisualizer::handleDragDeselecting(const sf::Event::MouseMoved &mouseEvent)
 {
     std::cout << "(" << mouseEvent.position.x << ", " << mouseEvent.position.y << ")\n";
     const int row = mouseEvent.position.x / m_grid.getCellSize();
@@ -160,3 +209,4 @@ void PathfindingVisualizer::handleDeslecting(const sf::Event::MouseMoved &mouseE
     // switch case to handle toggling start, goal, and obstacle
     m_grid.m_cells[row][col].setCellType(CellType::open);
 }
+
