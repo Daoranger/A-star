@@ -5,19 +5,13 @@
 #include "Grid.h"
 #include <iostream>
 
-Grid::Grid()
-    : m_rows(20)
-    , m_cols(20)
-    , m_cellSize(50)
-    , m_cells(m_rows, std::vector<Cell>(m_cols, Cell(m_cellSize)))
-{
-}
-
 Grid::Grid(std::size_t rows, std::size_t cols, float cellSize)
     : m_rows(rows)
     , m_cols(cols)
     , m_cellSize(cellSize)
     , m_cells(m_rows, std::vector<Cell>(m_cols, Cell(m_cellSize)))
+    , m_startCell(nullptr)
+    , m_goalCell(nullptr)
 {
 }
 

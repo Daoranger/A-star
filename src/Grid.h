@@ -11,17 +11,21 @@
 class Grid
 {
 public:
-    Grid();
+
     Grid(std::size_t rows, std::size_t cols, float cellSize);
     void draw(sf::RenderWindow& window);
     [[nodiscard]] std::size_t getRows() const;
     [[nodiscard]] std::size_t getCols() const;
     [[nodiscard]] float getCellSize() const;
 
+    Cell* m_startCell;
+    Cell* m_goalCell;
+
 private:
     std::size_t m_rows;
     std::size_t m_cols;
     float m_cellSize;
+
 
 public:
     std::vector<std::vector<Cell>> m_cells;

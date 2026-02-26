@@ -7,10 +7,10 @@
 
 enum class CellType
 {
-    start,
-    goal,
-    obstacle,
-    open,
+    start = 0,
+    goal = 1,
+    obstacle = 2,
+    open = 3,
 };
 
 class Cell
