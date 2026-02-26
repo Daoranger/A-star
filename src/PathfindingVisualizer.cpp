@@ -43,7 +43,7 @@ void PathfindingVisualizer::processEvents()
         // on mouse button pressed
         if (const auto* mouseButtonPressedEvent = event->getIf<sf::Event::MouseButtonPressed>())
         {
-            //handleClickToggling(*mouseButtonPressedEvent, m_bSelecting);
+            handleClickToggling(*mouseButtonPressedEvent, m_bSelecting);
             m_bisDragging = true;
 
         }
@@ -204,35 +204,66 @@ void PathfindingVisualizer::handleClickToggling(const sf::Event::MouseButtonPres
     // switch case to handle toggling start, goal, and obstacle
     if (isSelecting)
     {
-        if (m_grid.m_cells[row][col].getCellType() == CellType::open || m_grid.m_cells[row][col].getCellType() == CellType::obstacle)
+        switch (m_grid.m_cells[row][col].getCellType())
         {
-            if (!m_bStartSelected)
+            case CellType::open:
+            case CellType::obstacle:
             {
-                m_bStartSelected = true;
+                m_grid.m_cells[row][col].setCellType(m_currentCellType);
+                if (!m_bStartSelected)
+                {
+                    m_grid.m_startCell = &m_grid.m_cells[row][col];
+                    m_bStartSelected = true;
+                }
+                else if (!m_bGoalSelected)
+                {
+                    m_grid.m_goalCell = &m_grid.m_cells[row][col];
+                    m_bGoalSelected = true;
+                }
+                break;
             }
-            else if (!m_bGoalSelected)
+            case CellType::start:
             {
-                m_bGoalSelected = true;
+                break;
             }
-            // set the cell with this row and col in the m_grid with the current cell type
-            m_grid.m_cells[row][col].setCellType(m_currentCellType);
+            case CellType::goal:
+            {
+                break;
+            }
         }
     }
     else
     {
         switch (m_grid.m_cells[row][col].getCellType())
         {
+
             case CellType::start:
             {
-                m_bStartSelected = false;
+                m_grid.m_cells[row][col].setCellType(CellType::open);
+                m_grid.m_startCell = nullptr;
+                if (m_bStartSelected)
+
+                    m_bStartSelected = false;
+                break;
             }
             case CellType::goal:
             {
-                m_bGoalSelected = false;
+                m_grid.m_cells[row][col].setCellType(CellType::open);
+                m_grid.m_goalCell = nullptr;
+                if (m_bGoalSelected)
+                    m_bGoalSelected = false;
+                break;
+            }
+            case CellType::obstacle:
+            {
+                m_grid.m_cells[row][col].setCellType(CellType::open);
+                break;
+            }
+            case CellType::open:
+            {
+                break;
             }
         }
-        // switch case to handle toggling start, goal, and obstacle
-        m_grid.m_cells[row][col].setCellType(CellType::open);
     }
 }
 
