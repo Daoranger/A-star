@@ -9,10 +9,18 @@ Grid::Grid(std::size_t rows, std::size_t cols, float cellSize)
     : m_rows(rows)
     , m_cols(cols)
     , m_cellSize(cellSize)
-    , m_cells(m_rows, std::vector<Cell>(m_cols, Cell(m_cellSize)))
+    , m_cells(m_rows, std::vector<Cell>(m_cols, Cell(m_cellSize, 0, 0)))
     , m_startCell(nullptr)
     , m_goalCell(nullptr)
 {
+    for (int i = 0; i < rows; ++i)
+    {
+        for (int j = 0; j < cols; ++j)
+        {
+            m_cells[i][j].m_x = i;
+            m_cells[i][j].m_y = j;
+        }
+    }
 }
 
 void Grid::draw(sf::RenderWindow &window)
@@ -40,4 +48,37 @@ std::size_t Grid::getCols() const
 float Grid::getCellSize() const
 {
     return m_cellSize;
+}
+
+void Grid::astar(Cell& startCell, Cell& goalCell)
+{
+    // open list is a prioriy queue which priortize the smaller value,
+    // which turn it into a min-heap
+    std::priority_queue<Cell, std::vector<Cell>, std::greater<Cell>> openList;
+    openList.push(startCell);
+
+    std::vector<Cell> closedList;
+
+    startCell.m_g = 0;
+    startCell.m_h = heuristic(startCell, goalCell);
+    startCell.m_f = startCell.m_g + startCell.m_h;
+    startCell.m_parent = nullptr;
+
+    while (!openList.empty())
+    {
+        Cell currCell = openList.top();
+
+        if (currCell == goalCell)
+        {
+            return;
+        }
+    }
+}
+
+double Grid::heuristic(const Cell &currCell, const Cell &goalCell)
+{
+    double dx = currCell.m_x - goalCell.m_x;
+    double dy = currCell.m_y - goalCell.m_y;
+
+    return std::sqrt((dx * dx) + (dy * dy));
 }

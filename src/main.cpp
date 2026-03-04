@@ -1,13 +1,10 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/Event.hpp>
 #include "Cell.h"
-#include "PathfindingVisualizer.h"
+#include "Game.h"
 
 int main()
 {
-	PathfindingVisualizer pf;
-
+	Game pf;
 	pf.run();
-
-
 }
