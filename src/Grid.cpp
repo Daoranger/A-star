@@ -50,7 +50,7 @@ float Grid::getCellSize() const
     return m_cellSize;
 }
 
-void Grid::astar(Cell& startCell, Cell& goalCell)
+std::vector<Cell> Grid::astar(Cell& startCell, Cell& goalCell)
 {
     // open list is a prioriy queue which priortize the smaller value,
     // which turn it into a min-heap
@@ -64,14 +64,27 @@ void Grid::astar(Cell& startCell, Cell& goalCell)
     startCell.m_f = startCell.m_g + startCell.m_h;
     startCell.m_parent = nullptr;
 
+
     while (!openList.empty())
     {
         Cell currCell = openList.top();
 
         if (currCell == goalCell)
         {
-            return;
+            std::vector<Cell> path;
+
+            while (currCell.m_parent)
+            {
+                path.push_back(currCell);
+                currCell = *currCell.m_parent;
+            }
+            return path;
         }
+
+        // Once we're done with the current node,
+        // remove it from open list, and add it to closed list.
+        closedList.push_back(openList.top());
+        openList.pop();
     }
 }
 

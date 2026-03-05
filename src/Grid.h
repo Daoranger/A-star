@@ -20,7 +20,7 @@ public:
     [[nodiscard]] std::size_t getRows() const;
     [[nodiscard]] std::size_t getCols() const;
     [[nodiscard]] float getCellSize() const;
-    void astar(Cell& startCell, Cell& goalCell);
+    std::vector<Cell> astar(Cell& startCell, Cell& goalCell);
     double heuristic(const Cell& currCell, const Cell& goalCell);
 
     Cell* m_startCell;
