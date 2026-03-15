@@ -7,7 +7,7 @@
 
 Game::Game()
     : m_window(sf::VideoMode( { 1200, 700 } ), "A* Pathfinding")
-    , m_grid(100, 100, 50)
+    , m_grid(10, 10, 50)
     , m_bStartSelected(false)
     , m_bGoalSelected(false)
     , m_bisDragging(false)
@@ -275,7 +275,15 @@ void Game::handleAStar()
     {
         std::cout << "Start cell: " << m_grid.m_startCell->m_x << " " << m_grid.m_startCell->m_y << "\n";
         std::cout << "Goal cell: " << m_grid.m_goalCell->m_x << " " << m_grid.m_goalCell->m_y << "\n";
-        m_grid.astar();
+        std::vector<Cell> path = m_grid.astar();
+
+        std::cout << "path size: " << path.size() << "\n";
+        
+        for (const auto& cell : path)
+        {
+            std::cout << "Hello\n";
+            std::cout << cell.m_x << " " << cell.m_y << "\n";
+        }
     }
     else
     {

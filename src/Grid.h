@@ -22,6 +22,7 @@ public:
     [[nodiscard]] float getCellSize() const;
     std::vector<Cell> astar();
     double heuristic(const Cell& currCell, const Cell& goalCell);
+    std::vector<std::pair<int, int>> getValidNeighbors(const Cell& currCell);
 
 
     Cell* m_startCell;
