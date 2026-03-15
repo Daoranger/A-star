@@ -87,6 +87,7 @@ void Game::processEvents()
 
 void Game::update()
 {
+
     if (!m_bStartSelected)
     {
         m_currentCellType = CellType::start;
@@ -270,6 +271,15 @@ void Game::handleClickToggling(const sf::Event::MouseButtonPressed &mouseEvent, 
 
 void Game::handleAStar()
 {
-    m_grid.astar(*m_grid.m_startCell, *m_grid.m_goalCell);
+    if (m_bGoalSelected && m_bStartSelected)
+    {
+        std::cout << "Start cell: " << m_grid.m_startCell->m_x << " " << m_grid.m_startCell->m_y << "\n";
+        std::cout << "Goal cell: " << m_grid.m_goalCell->m_x << " " << m_grid.m_goalCell->m_y << "\n";
+        m_grid.astar();
+    }
+    else
+    {
+        std::cout << "Start cell or Goal cell is not selected\n";
+    }
 }
 

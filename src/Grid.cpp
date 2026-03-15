@@ -50,26 +50,26 @@ float Grid::getCellSize() const
     return m_cellSize;
 }
 
-std::vector<Cell> Grid::astar(Cell& startCell, Cell& goalCell)
+std::vector<Cell> Grid::astar()
 {
     // open list is a prioriy queue which priortize the smaller value,
     // which turn it into a min-heap
     std::priority_queue<Cell, std::vector<Cell>, std::greater<Cell>> openList;
-    openList.push(startCell);
+    openList.push(*m_startCell);
 
     std::vector<Cell> closedList;
 
-    startCell.m_g = 0;
-    startCell.m_h = heuristic(startCell, goalCell);
-    startCell.m_f = startCell.m_g + startCell.m_h;
-    startCell.m_parent = nullptr;
+    m_startCell->m_g = 0;
+    m_startCell->m_h = heuristic(*m_startCell, *m_startCell);
+    m_startCell->m_f = m_startCell->m_g + m_startCell->m_h;
+    m_startCell->m_parent = nullptr;
 
 
     while (!openList.empty())
     {
         Cell currCell = openList.top();
 
-        if (currCell == goalCell)
+        if (currCell == *m_goalCell)
         {
             std::vector<Cell> path;
 
@@ -85,7 +85,11 @@ std::vector<Cell> Grid::astar(Cell& startCell, Cell& goalCell)
         // remove it from open list, and add it to closed list.
         closedList.push_back(openList.top());
         openList.pop();
+
+        std::cout << "Current cell: " << currCell << "\n";
     }
+
+    return {};
 }
 
 double Grid::heuristic(const Cell &currCell, const Cell &goalCell)
