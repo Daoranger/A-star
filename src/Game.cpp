@@ -275,14 +275,14 @@ void Game::handleAStar()
     {
         std::cout << "Start cell: " << m_grid.m_startCell->m_x << " " << m_grid.m_startCell->m_y << "\n";
         std::cout << "Goal cell: " << m_grid.m_goalCell->m_x << " " << m_grid.m_goalCell->m_y << "\n";
-        std::vector<Cell> path = m_grid.astar();
+        std::vector<Cell*> path = m_grid.astar();
 
         std::cout << "path size: " << path.size() << "\n";
-        
-        for (const auto& cell : path)
+
+        for (int i = 1; i < path.size(); ++i)
         {
-            std::cout << "Hello\n";
-            std::cout << cell.m_x << " " << cell.m_y << "\n";
+            path[i]->setCellType(CellType::path);
+            std::cout << path[i]->m_x << " " << path[i]->m_y << "\n";
         }
     }
     else

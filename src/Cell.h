@@ -11,6 +11,7 @@ enum class CellType
     goal = 1,
     obstacle = 2,
     open = 3,
+    path = 4
 };
 
 class Cell
@@ -27,6 +28,8 @@ public:
     friend std::ostream& operator<<(std::ostream& out, const Cell& cell);
     bool operator==(const Cell& other);
 
+    void setCellColor(sf::Color color);
+
     int m_x;
     int m_y;
 
@@ -38,6 +41,7 @@ public:
 private:
     sf::RectangleShape m_square;
     CellType m_cellType;
+    sf::Color m_cellColor;
 
 };
 

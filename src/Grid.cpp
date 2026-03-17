@@ -50,18 +50,18 @@ float Grid::getCellSize() const
     return m_cellSize;
 }
 
-std::vector<Cell> Grid::astar()
+std::vector<Cell*> Grid::astar()
 {
     // open list is a prioriy queue which priortize the smaller value,
     // which turn it into a min-heap
-    std::priority_queue<Cell, std::vector<Cell>, std::greater<Cell>> openList;
-    openList.push(*m_startCell);
+    std::priority_queue<Cell*, std::vector<Cell*>, CompareCell>  openList;
+    openList.push(m_startCell);
 
     // use only to keep track of membership in openList (cuz priority_queue doesn't support iterators)
-    std::vector<Cell> openListMembership;
-    openListMembership.push_back(*m_startCell);
+    std::vector<Cell*> openListMembership;
+    openListMembership.push_back(m_startCell);
 
-    std::vector<Cell> closedList;
+    std::vector<Cell*> closedList;
 
     m_startCell->m_g = 0;
     m_startCell->m_h = heuristic(*m_startCell, *m_goalCell);
@@ -71,18 +71,19 @@ std::vector<Cell> Grid::astar()
 
     while (!openList.empty())
     {
-        Cell currCell = openList.top();
+        std::cout << "List not empty\n";
+        Cell* currCell = openList.top();
 
         // check if we've reached goalCell
         // if yes, return the path;
-        if (currCell == *m_goalCell)
+        if (*currCell == *m_goalCell)
         {
-            std::vector<Cell> path;
+            std::vector<Cell*> path;
 
-            while (currCell.m_parent)
+            while (currCell->m_parent)
             {
                 path.push_back(currCell);
-                currCell = *currCell.m_parent;
+                currCell = currCell->m_parent;
             }
             return path;
         }
@@ -93,34 +94,34 @@ std::vector<Cell> Grid::astar()
         openList.pop();
         openListMembership.pop_back();
 
-        std::cout << "Current cell: " << currCell << "\n";
+        //std::cout << "Current cell: " << currCell << "\n";
 
-        std::vector<std::pair<int, int>> neighbors = getValidNeighbors(currCell);
+        std::vector<std::pair<int, int>> neighbors = getValidNeighbors(*currCell);
 
         for (auto& n : neighbors)
         {
             Cell* neighborCell = &m_cells[n.first][n.second];
 
             // if neighbor in closedList
-            if (std::count(closedList.begin(), closedList.end(), *neighborCell) > 0)
+            if (std::count(closedList.begin(), closedList.end(), neighborCell) > 0)
             {
                 continue;   // skip already evaluated Cells
             }
 
-            int tentative_g = currCell.m_g + heuristic(currCell, *neighborCell);
+            int tentative_g = currCell->m_g + heuristic(*currCell, *neighborCell);
 
             // if neighbor is not in openList
-            if (std::count(openListMembership.begin(), openListMembership.end(), *neighborCell) <= 0)
+            if (std::count(openListMembership.begin(), openListMembership.end(), neighborCell) <= 0)
             {
-                openList.push(*neighborCell);
-                openListMembership.push_back(*neighborCell);
+                openList.push(neighborCell);
+                openListMembership.push_back(neighborCell);
             }
             else if (tentative_g >= neighborCell->m_g)
             {
                 continue;
             }
 
-            neighborCell->m_parent = &currCell;
+            neighborCell->m_parent = currCell;
             neighborCell->m_g = tentative_g;
             neighborCell->m_h = heuristic(*neighborCell, *m_goalCell);
             neighborCell->m_f = neighborCell->m_g + neighborCell->m_h;
@@ -128,11 +129,14 @@ std::vector<Cell> Grid::astar()
     }
 
     // failure no path exists, return empty path;
+    std::cout << "No path\n";
     return {};
 }
 
 double Grid::heuristic(const Cell &currCell, const Cell &goalCell)
 {
+
+    // Euclidian distance
     double dx = currCell.m_x - goalCell.m_x;
     double dy = currCell.m_y - goalCell.m_y;
 
@@ -160,7 +164,7 @@ std::vector<std::pair<int, int>> Grid::getValidNeighbors(const Cell &currCell)
 
     for (auto& pn : possible_neighbors)
     {
-        if ((pn.first >= 0 && pn.second >=0) && (pn.first < m_rows - 1 && pn.second < m_cols - 1))
+        if ((pn.first >= 0 && pn.second >=0) && (pn.first < m_rows && pn.second < m_cols))
         {
             valid_neighbors.push_back(pn);
         }

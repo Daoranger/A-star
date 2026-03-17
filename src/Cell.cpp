@@ -24,18 +24,27 @@ void Cell::draw(sf::RenderWindow& window)
     switch (m_cellType)
     {
         case CellType::start:
-            m_square.setFillColor(sf::Color::Green);
+            //m_square.setFillColor(sf::Color::Green);
+            setCellColor(sf::Color::Green);
             break;
         case CellType::goal:
-            m_square.setFillColor(sf::Color::Red);
+            //m_square.setFillColor(sf::Color::Red);
+            setCellColor(sf::Color::Red);
             break;
         case CellType::obstacle:
-            m_square.setFillColor(sf::Color::Black);
+            //m_square.setFillColor(sf::Color::Black);
+            setCellColor(sf::Color::Black);
             break;
         case CellType::open:
-            m_square.setFillColor(sf::Color::White);
+            //m_square.setFillColor(sf::Color::White);
+            setCellColor(sf::Color::White);
+            break;
+        case CellType::path:
+            setCellColor(sf::Color::Blue);
             break;
     }
+
+    m_square.setFillColor(m_cellColor);
 
     window.draw(m_square);
 }
@@ -63,6 +72,11 @@ bool Cell::operator>(const Cell &other) const
 bool Cell::operator==(const Cell& other)
 {
     return m_x == other.m_x && m_y == other.m_y;
+}
+
+void Cell::setCellColor(sf::Color color)
+{
+    m_cellColor = color;
 }
 
 std::ostream& operator<<(std::ostream &out, const Cell& cell)

@@ -11,6 +11,16 @@
 #include <cmath>
 #include "Cell.h"
 
+struct CompareCell
+{
+    bool operator()(Cell* a, Cell* b)
+    {
+        // In priority queue, this mean Cell a goes after Cell b
+        // because we want Cell with lower f value have more priority
+        return a->m_f > b->m_f;
+    }
+};
+
 class Grid
 {
 public:
@@ -20,7 +30,7 @@ public:
     [[nodiscard]] std::size_t getRows() const;
     [[nodiscard]] std::size_t getCols() const;
     [[nodiscard]] float getCellSize() const;
-    std::vector<Cell> astar();
+    std::vector<Cell*> astar();
     double heuristic(const Cell& currCell, const Cell& goalCell);
     std::vector<std::pair<int, int>> getValidNeighbors(const Cell& currCell);
 
