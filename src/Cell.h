@@ -23,21 +23,11 @@ public:
     void setSquarePosition(const sf::Vector2f& pos);
     void setCellType(CellType cellType);
     CellType getCellType() const;
-
     bool operator>(const Cell& other) const;  // overloaded operator > so it can be use in greater<> comparator
     friend std::ostream& operator<<(std::ostream& out, const Cell& cell);
     bool operator==(const Cell& other);
-
     void setCellColor(sf::Color color);
-
-    void resetCell()
-    {
-        m_g = 0.0;
-        m_h = 0.0;
-        m_f = 0.0;
-        m_parent = nullptr;
-        m_cellType = CellType::open;
-    }
+    void resetCell();
 
     int m_x;
     int m_y;

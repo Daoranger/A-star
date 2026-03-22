@@ -80,11 +80,13 @@ std::vector<Cell*> Grid::astar()
         {
             std::vector<Cell*> path;
 
-            while (currCell->m_parent)
+            while (currCell != nullptr)
             {
                 path.push_back(currCell);
                 currCell = currCell->m_parent;
             }
+            // change from goal-to-start order to start-to-goal order
+            std::reverse(path.begin(), path.end());
             return path;
         }
 
@@ -92,7 +94,11 @@ std::vector<Cell*> Grid::astar()
         // remove it from open list, and add it to closed list.
         closedList.push_back(openList.top());
         openList.pop();
-        openListMembership.pop_back();
+        auto it = std::find(openListMembership.begin(), openListMembership.end(), currCell);
+        if (it != openListMembership.end())
+        {
+            openListMembership.erase(it);
+        }
 
         //std::cout << "Current cell: " << currCell << "\n";
 
@@ -108,7 +114,7 @@ std::vector<Cell*> Grid::astar()
                 continue;   // skip already evaluated Cells
             }
 
-            int tentative_g = currCell->m_g + heuristic(*currCell, *neighborCell);
+            double tentative_g = currCell->m_g + 1.0;
 
             // if neighbor is not in openList
             if (std::count(openListMembership.begin(), openListMembership.end(), neighborCell) <= 0)
@@ -125,6 +131,7 @@ std::vector<Cell*> Grid::astar()
             neighborCell->m_g = tentative_g;
             neighborCell->m_h = heuristic(*neighborCell, *m_goalCell);
             neighborCell->m_f = neighborCell->m_g + neighborCell->m_h;
+            openList.push(neighborCell);    // push the same cell again to update priority in priority_queue
         }
     }
 
@@ -137,47 +144,53 @@ double Grid::heuristic(const Cell &currCell, const Cell &goalCell)
 {
 
     // Euclidian distance
-    double dx = currCell.m_x - goalCell.m_x;
-    double dy = currCell.m_y - goalCell.m_y;
+    // double dx = currCell.m_x - goalCell.m_x;
+    // double dy = currCell.m_y - goalCell.m_y;
+    //
+    // return std::sqrt((dx * dx) + (dy * dy));
 
-    return std::sqrt((dx * dx) + (dy * dy));
+    // Manhattan distance
+    double dx = std::abs(currCell.m_x - goalCell.m_x);
+    double dy = std::abs(currCell.m_y - goalCell.m_y);
+
+    return dx + dy;
 }
 
-std::vector<std::pair<int, int>> Grid::getValidNeighbors(const Cell &currCell)
-{
-    int currCellX = currCell.m_x;
-    int currCellY = currCell.m_y;
-
-    // pair<int, int>: first = row, second = row
-    std::vector<std::pair<int, int>> possible_neighbors {
-        {currCellX - 1, currCellY - 1},
-        {currCellX - 1, currCellY},
-        {currCellX - 1, currCellY + 1},
-        {currCellX, currCellY - 1},
-        {currCellX, currCellY + 1},
-        {currCellX + 1, currCellY - 1},
-        {currCellX + 1, currCellY},
-        {currCellX + 1, currCellY + 1}
-    };
-
-    std::vector<std::pair<int, int>> valid_neighbors {};
-
-    for (auto& pn : possible_neighbors)
+    std::vector<std::pair<int, int>> Grid::getValidNeighbors(const Cell &currCell)
     {
-        if ((pn.first >= 0 && pn.second >=0) && (pn.first < m_rows && pn.second < m_cols))
+        int currCellX = currCell.m_x;
+        int currCellY = currCell.m_y;
+
+        // pair<int, int>: first = row, second = col
+        std::vector<std::pair<int, int>> possible_neighbors {
+            // {currCellX - 1, currCellY - 1},
+            {currCellX - 1, currCellY},
+            // {currCellX - 1, currCellY + 1},
+            {currCellX, currCellY - 1},
+            {currCellX, currCellY + 1},
+            // {currCellX + 1, currCellY - 1},
+            {currCellX + 1, currCellY},
+            //{currCellX + 1, currCellY + 1}
+        };
+
+        std::vector<std::pair<int, int>> valid_neighbors {};
+
+        for (auto& pn : possible_neighbors)
         {
-            valid_neighbors.push_back(pn);
+            if ((pn.first >= 0 && pn.second >=0) && (pn.first < m_rows && pn.second < m_cols))
+            {
+                valid_neighbors.push_back(pn);
+            }
         }
+
+        // DEBUG: print valid_neighbors
+        // for (auto& vn : valid_neighbors)
+        // {
+        //     std::cout << vn.first << " " << vn.second << "\n";
+        // }
+
+        return valid_neighbors;
     }
-
-    // DEBUG: print valid_neighbors
-    // for (auto& vn : valid_neighbors)
-    // {
-    //     std::cout << vn.first << " " << vn.second << "\n";
-    // }
-
-    return valid_neighbors;
-}
 
 void Grid::resetCells()
 {

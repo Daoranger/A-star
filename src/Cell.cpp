@@ -3,14 +3,15 @@
 //
 
 #include "Cell.h"
+#include <limits>
 
 Cell::Cell(const float cellSize, int x, int y)
     : m_cellType(CellType::open)
     , m_x(x)
     , m_y(y)
-    , m_g(0.0)
+    , m_g(std::numeric_limits<double>::infinity())
     , m_h(0.0)
-    , m_f(0.0)
+    , m_f(std::numeric_limits<double>::infinity())
     , m_parent(nullptr)
 {
     m_square.setSize(sf::Vector2f(cellSize, cellSize));
@@ -77,6 +78,15 @@ bool Cell::operator==(const Cell& other)
 void Cell::setCellColor(sf::Color color)
 {
     m_cellColor = color;
+}
+
+void Cell::resetCell()
+{
+    m_g = std::numeric_limits<double>::infinity();
+    m_h = 0.0;
+    m_f = std::numeric_limits<double>::infinity();
+    m_parent = nullptr;
+    m_cellType = CellType::open;
 }
 
 std::ostream& operator<<(std::ostream &out, const Cell& cell)
