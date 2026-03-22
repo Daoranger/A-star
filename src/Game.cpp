@@ -63,11 +63,16 @@ void Game::processEvents()
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num3)
             {
+                if (!m_bPathGenerated)
+                {
                     handleAStar();
+                    m_bPathGenerated = true;
+                }
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num4)
             {
                 m_grid.resetCells();
+                m_bPathGenerated = false;
             }
         }
 
@@ -278,8 +283,6 @@ void Game::handleAStar()
 {
     if (m_bGoalSelected && m_bStartSelected)
     {
-        std::cout << "Start cell: " << m_grid.m_startCell->m_x << " " << m_grid.m_startCell->m_y << "\n";
-        std::cout << "Goal cell: " << m_grid.m_goalCell->m_x << " " << m_grid.m_goalCell->m_y << "\n";
         std::vector<Cell*> path = m_grid.astar();
 
         std::cout << "path size: " << path.size() << "\n";
@@ -290,7 +293,7 @@ void Game::handleAStar()
             for (int i = 1; i < path.size() - 1; ++i)
             {
                 path[i]->setCellType(CellType::path);
-                std::cout << path[i]->m_x << " " << path[i]->m_y << "\n";
+                //std::cout << path[i]->m_x << " " << path[i]->m_y << "\n";
             }
         }
         else
@@ -303,4 +306,3 @@ void Game::handleAStar()
         std::cout << "Start cell or Goal cell is not selected\n";
     }
 }
-

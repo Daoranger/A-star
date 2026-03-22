@@ -71,7 +71,6 @@ std::vector<Cell*> Grid::astar()
 
     while (!openList.empty())
     {
-        std::cout << "List not empty\n";
         Cell* currCell = openList.top();
 
         // check if we've reached goalCell
@@ -99,8 +98,6 @@ std::vector<Cell*> Grid::astar()
         {
             openListMembership.erase(it);
         }
-
-        //std::cout << "Current cell: " << currCell << "\n";
 
         std::vector<std::pair<int, int>> neighbors = getValidNeighbors(*currCell);
 
@@ -136,7 +133,6 @@ std::vector<Cell*> Grid::astar()
     }
 
     // failure no path exists, return empty path;
-    std::cout << "No path\n";
     return {};
 }
 
@@ -186,12 +182,10 @@ void Grid::resetCells()
     {
         for (int j = 0; j < m_cols; ++j)
         {
-            if (m_cells[i][j].getCellType() == CellType::start || m_cells[i][j].getCellType() == CellType::goal)
+            if (m_cells[i][j].getCellType() == CellType::path)
             {
-                continue;
+                m_cells[i][j].resetCell();
             }
-
-            m_cells[i][j].resetCell();
         }
     }
 }
