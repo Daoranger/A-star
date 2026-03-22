@@ -41,7 +41,8 @@ void Cell::draw(sf::RenderWindow& window)
             setCellColor(sf::Color::White);
             break;
         case CellType::path:
-            setCellColor(sf::Color::Blue);
+            sf::Color orange(255, 165, 0);
+            setCellColor(orange);
             break;
     }
 

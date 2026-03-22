@@ -63,16 +63,8 @@ void Game::processEvents()
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num3)
             {
-                if (!m_bPathGenerated)
-                {
+                    m_grid.resetCells();
                     handleAStar();
-                    m_bPathGenerated = true;
-                }
-            }
-            else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num4)
-            {
-                m_grid.resetCells();
-                m_bPathGenerated = false;
             }
         }
 
@@ -289,7 +281,8 @@ void Game::handleAStar()
 
         std::cout << "path size: " << path.size() << "\n";
 
-        for (int i = 1; i < path.size(); ++i)
+        // exclude the start and goal cell for now
+        for (int i = 1; i < path.size() - 1; ++i)
         {
             path[i]->setCellType(CellType::path);
             std::cout << path[i]->m_x << " " << path[i]->m_y << "\n";
