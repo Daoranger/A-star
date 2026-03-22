@@ -7,7 +7,7 @@
 
 Game::Game()
     : m_window(sf::VideoMode( { 1200, 700 } ), "A* Pathfinding")
-    , m_grid(10, 10, 50)
+    , m_grid(20, 20, 50)
     , m_bStartSelected(false)
     , m_bGoalSelected(false)
     , m_bisDragging(false)
@@ -63,8 +63,11 @@ void Game::processEvents()
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num3)
             {
-                    m_grid.resetCells();
                     handleAStar();
+            }
+            else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num4)
+            {
+                m_grid.resetCells();
             }
         }
 
@@ -281,11 +284,18 @@ void Game::handleAStar()
 
         std::cout << "path size: " << path.size() << "\n";
 
-        // exclude the start and goal cell for now
-        for (int i = 1; i < path.size() - 1; ++i)
+        if (path.size() > 0)
         {
-            path[i]->setCellType(CellType::path);
-            std::cout << path[i]->m_x << " " << path[i]->m_y << "\n";
+            // exclude the start and goal cell for now
+            for (int i = 1; i < path.size() - 1; ++i)
+            {
+                path[i]->setCellType(CellType::path);
+                std::cout << path[i]->m_x << " " << path[i]->m_y << "\n";
+            }
+        }
+        else
+        {
+            std::cout << "No path exist\n";
         }
     }
     else

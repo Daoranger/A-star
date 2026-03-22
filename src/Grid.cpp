@@ -142,17 +142,9 @@ std::vector<Cell*> Grid::astar()
 
 double Grid::heuristic(const Cell &currCell, const Cell &goalCell)
 {
-
-    // Euclidian distance
-    // double dx = currCell.m_x - goalCell.m_x;
-    // double dy = currCell.m_y - goalCell.m_y;
-    //
-    // return std::sqrt((dx * dx) + (dy * dy));
-
     // Manhattan distance
     double dx = std::abs(currCell.m_x - goalCell.m_x);
     double dy = std::abs(currCell.m_y - goalCell.m_y);
-
     return dx + dy;
 }
 
@@ -163,21 +155,17 @@ double Grid::heuristic(const Cell &currCell, const Cell &goalCell)
 
         // pair<int, int>: first = row, second = col
         std::vector<std::pair<int, int>> possible_neighbors {
-            // {currCellX - 1, currCellY - 1},
             {currCellX - 1, currCellY},
-            // {currCellX - 1, currCellY + 1},
-            {currCellX, currCellY - 1},
-            {currCellX, currCellY + 1},
-            // {currCellX + 1, currCellY - 1},
             {currCellX + 1, currCellY},
-            //{currCellX + 1, currCellY + 1}
+            {currCellX, currCellY - 1},
+            {currCellX, currCellY + 1}
         };
 
         std::vector<std::pair<int, int>> valid_neighbors {};
 
         for (auto& pn : possible_neighbors)
         {
-            if ((pn.first >= 0 && pn.second >=0) && (pn.first < m_rows && pn.second < m_cols))
+            if ((pn.first >= 0 && pn.second >=0) && (pn.first < m_rows && pn.second < m_cols) && (m_cells[pn.first][pn.second].getCellType() != CellType::obstacle))
             {
                 valid_neighbors.push_back(pn);
             }
