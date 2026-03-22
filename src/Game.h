@@ -32,6 +32,7 @@ private:
     bool m_bGoalSelected;
     bool m_bisDragging;
     bool m_bSelecting;
+    bool m_bPathGenerated;
 
 };
 

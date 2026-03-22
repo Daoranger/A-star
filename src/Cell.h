@@ -30,6 +30,15 @@ public:
 
     void setCellColor(sf::Color color);
 
+    void resetCell()
+    {
+        m_g = 0.0;
+        m_h = 0.0;
+        m_f = 0.0;
+        m_parent = nullptr;
+        m_cellType = CellType::open;
+    }
+
     int m_x;
     int m_y;
 

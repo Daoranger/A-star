@@ -33,7 +33,7 @@ public:
     std::vector<Cell*> astar();
     double heuristic(const Cell& currCell, const Cell& goalCell);
     std::vector<std::pair<int, int>> getValidNeighbors(const Cell& currCell);
-
+    void resetCells();
 
     Cell* m_startCell;
     Cell* m_goalCell;

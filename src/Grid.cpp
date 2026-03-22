@@ -178,3 +178,19 @@ std::vector<std::pair<int, int>> Grid::getValidNeighbors(const Cell &currCell)
 
     return valid_neighbors;
 }
+
+void Grid::resetCells()
+{
+    for (int i = 0; i < m_rows; ++i)
+    {
+        for (int j = 0; j < m_cols; ++j)
+        {
+            if (m_cells[i][j].getCellType() == CellType::start || m_cells[i][j].getCellType() == CellType::goal)
+            {
+                continue;
+            }
+
+            m_cells[i][j].resetCell();
+        }
+    }
+}

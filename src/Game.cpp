@@ -12,6 +12,7 @@ Game::Game()
     , m_bGoalSelected(false)
     , m_bisDragging(false)
     , m_bSelecting(true)
+    , m_bPathGenerated(false)
 {
 }
 
@@ -62,7 +63,16 @@ void Game::processEvents()
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num3)
             {
-                handleAStar();
+                if (!m_bPathGenerated)
+                {
+                    handleAStar();
+                    m_bPathGenerated = true;
+                }
+            }
+            else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num4)
+            {
+                m_grid.resetCells();
+                m_bPathGenerated = false;
             }
         }
 
