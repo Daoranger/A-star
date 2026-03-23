@@ -38,17 +38,22 @@ void Game::processEvents()
         {
             // created a view from fixed visible area using FloatRect
             sf::FloatRect visibleArea(sf::Vector2f(0, 0), sf::Vector2f(resizedEvent->size.x, resizedEvent->size.y));
-            m_window.setView(sf::View(visibleArea));
+            m_view = sf::View(visibleArea);
+            m_window.setView(m_view);
         }
 
-        // on mouse button pressed
+        // Mouse Button Pressed Event
         if (const auto* mouseButtonPressedEvent = event->getIf<sf::Event::MouseButtonPressed>())
         {
-            handleClickToggling(*mouseButtonPressedEvent, m_bSelecting);
+            sf::Vector2i pixelPos = mouseButtonPressedEvent->position;
+            sf::Vector2f worldPos = m_window.mapPixelToCoords(pixelPos, m_view);
+
+            handleClickToggling(*mouseButtonPressedEvent, worldPos, m_bSelecting);
             m_bisDragging = true;
 
         }
 
+        // Keyboard Keys Pressed Events
         if (const auto* keyPressedEvent = event->getIf<sf::Event::KeyPressed>())
         {
             if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num1)
@@ -76,21 +81,43 @@ void Game::processEvents()
             }
         }
 
+        // Mouse Button Released Event
         if (const auto* mouseButtonReleasedEvent = event->getIf<sf::Event::MouseButtonReleased>())
         {
             m_bisDragging = false;
         }
 
+        // Mouse Drag Event
         if (const auto* mouseMovedEvent = event->getIf<sf::Event::MouseMoved>())
         {
+            sf::Vector2i pixelPos = mouseMovedEvent->position;
+            sf::Vector2f worldPos = m_window.mapPixelToCoords(pixelPos, m_view);
+
             if (m_bisDragging && m_bSelecting)
             {
-                handleDragSelecting(*mouseMovedEvent);
+                handleDragSelecting(*mouseMovedEvent, worldPos);
             }
             else if (m_bisDragging && !m_bSelecting)
             {
-                handleDragDeselecting(*mouseMovedEvent);
+                handleDragDeselecting(*mouseMovedEvent, worldPos);
             }
+        }
+
+        // Mouse Wheel Scrolled Event
+        if (const auto* mouseWheelScrolled = event->getIf<sf::Event::MouseWheelScrolled>())
+        {
+            if (mouseWheelScrolled->delta > 0)
+            {
+                std::cout << "Scrolling up\n";
+                m_view.zoom(0.9f);
+            }
+            else if (mouseWheelScrolled->delta < 0)
+            {
+                std::cout << "Scrolling down\n";
+                m_view.zoom(1.1f);
+            }
+
+            m_window.setView(m_view);
         }
     }
 }
@@ -119,10 +146,10 @@ void Game::draw()
     m_window.display();
 }
 
-void Game::handleDragSelecting(const sf::Event::MouseMoved& mouseEvent)
+void Game::handleDragSelecting(const sf::Event::MouseMoved& mouseEvent, const sf::Vector2f& worldPos)
 {
-    const int row = mouseEvent.position.x / m_grid.getCellSize();
-    const int col = mouseEvent.position.y / m_grid.getCellSize();
+    const int row = worldPos.x / m_grid.getCellSize();
+    const int col = worldPos.y / m_grid.getCellSize();
 
     if (row >= m_grid.getRows() || col >= m_grid.getCols())
     {
@@ -159,10 +186,10 @@ void Game::handleDragSelecting(const sf::Event::MouseMoved& mouseEvent)
 
 }
 
-void Game::handleDragDeselecting(const sf::Event::MouseMoved &mouseEvent)
+void Game::handleDragDeselecting(const sf::Event::MouseMoved &mouseEvent, const sf::Vector2f& worldPos)
 {
-    const int row = mouseEvent.position.x / m_grid.getCellSize();
-    const int col = mouseEvent.position.y / m_grid.getCellSize();
+    const int row = worldPos.x / m_grid.getCellSize();
+    const int col = worldPos.y / m_grid.getCellSize();
 
     // if clicking outside the grid
     if (row >= m_grid.getRows() || col >= m_grid.getCols())
@@ -202,10 +229,10 @@ void Game::handleDragDeselecting(const sf::Event::MouseMoved &mouseEvent)
     }
 }
 
-void Game::handleClickToggling(const sf::Event::MouseButtonPressed &mouseEvent, const bool isSelecting)
+void Game::handleClickToggling(const sf::Event::MouseButtonPressed &mouseEvent, const sf::Vector2f& worldPos, const bool isSelecting)
 {
-    const int row = mouseEvent.position.x / m_grid.getCellSize();
-    const int col = mouseEvent.position.y / m_grid.getCellSize();
+    const int row = worldPos.x / m_grid.getCellSize();
+    const int col = worldPos.y / m_grid.getCellSize();
 
     // if clicking outside the grid
     if (row >= m_grid.getRows() || col >= m_grid.getCols())
