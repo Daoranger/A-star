@@ -19,9 +19,9 @@ public:
     void processEvents();
     void update();
     void draw();
-    void handleDragSelecting(const sf::Event::MouseMoved& mouseEvent);
-    void handleDragDeselecting(const sf::Event::MouseMoved& mouseEvent);
-    void handleClickToggling(const sf::Event::MouseButtonPressed& mouseEvent, const bool bSelecting);
+    void handleDragSelecting(const sf::Event::MouseMoved& mouseEvent, const sf::Vector2f& worldPos);
+    void handleDragDeselecting(const sf::Event::MouseMoved& mouseEvent, const sf::Vector2f& worldPos);
+    void handleClickToggling(const sf::Event::MouseButtonPressed& mouseEvent, const sf::Vector2f& worldPos, const bool bSelecting);
     void handleAStar();
 
 private:
