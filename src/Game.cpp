@@ -7,6 +7,7 @@
 
 Game::Game()
     : m_window(sf::VideoMode( { 1200, 700 } ), "A* Pathfinding")
+    , m_view(sf::FloatRect(sf::Vector2f(0, 0), sf::Vector2f(m_window.getPosition().x, m_window.getPosition().y)))
     , m_grid(20, 20, 50)
     , m_bStartSelected(false)
     , m_bGoalSelected(false)
@@ -14,6 +15,7 @@ Game::Game()
     , m_bSelecting(true)
     , m_bPathGenerated(false)
 {
+    m_window.setView(m_view);
 }
 
 void Game::run()
