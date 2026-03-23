@@ -38,7 +38,8 @@ void Game::processEvents()
         {
             // created a view from fixed visible area using FloatRect
             sf::FloatRect visibleArea(sf::Vector2f(0, 0), sf::Vector2f(resizedEvent->size.x, resizedEvent->size.y));
-            m_window.setView(sf::View(visibleArea));
+            m_view = sf::View(visibleArea);
+            m_window.setView(m_view);
         }
 
         // on mouse button pressed
@@ -91,6 +92,22 @@ void Game::processEvents()
             {
                 handleDragDeselecting(*mouseMovedEvent);
             }
+        }
+
+        if (const auto* mouseWheelScrolled = event->getIf<sf::Event::MouseWheelScrolled>())
+        {
+            if (mouseWheelScrolled->delta > 0)
+            {
+                std::cout << "Scrolling up\n";
+                m_view.zoom(0.9f);
+            }
+            else if (mouseWheelScrolled->delta < 0)
+            {
+                std::cout << "Scrolling down\n";
+                m_view.zoom(1.1f);
+            }
+
+            m_window.setView(m_view);
         }
     }
 }

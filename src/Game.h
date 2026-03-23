@@ -26,6 +26,7 @@ public:
 
 private:
     sf::RenderWindow m_window;
+    sf::View m_view;
     Grid m_grid;
     CellType m_currentCellType {CellType::start};
     bool m_bStartSelected;
