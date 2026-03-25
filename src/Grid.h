@@ -13,11 +13,12 @@
 
 struct CompareCell
 {
-    bool operator()(Cell* a, Cell* b)
+    bool operator()(Cell* a, Cell* b) const
     {
-        // In priority queue, this mean Cell a goes after Cell b
-        // because we want Cell with lower f value have more priority
-        return a->m_f > b->m_f;
+        if (a->m_f != b->m_f)
+            return a->m_f < b->m_f;  // lower f = higher priority
+
+        return a < b;
     }
 };
 

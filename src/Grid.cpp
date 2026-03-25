@@ -4,6 +4,8 @@
 
 #include "Grid.h"
 #include <iostream>
+#include <unordered_set>
+#include <set>
 
 Grid::Grid(std::size_t rows, std::size_t cols, float cellSize)
     : m_rows(rows)
@@ -52,29 +54,23 @@ float Grid::getCellSize() const
 
 std::vector<Cell*> Grid::astar()
 {
-    // open list is a prioriy queue which priortize the smaller value,
-    // which turn it into a min-heap
-    std::priority_queue<Cell*, std::vector<Cell*>, CompareCell>  openList;
-    openList.push(m_startCell);
-
-    // use only to keep track of membership in openList (cuz priority_queue doesn't support iterators)
-    std::vector<Cell*> openListMembership;
-    openListMembership.push_back(m_startCell);
-
-    std::vector<Cell*> closedList;
+    std::set<Cell*, CompareCell> openSet;
+    std::unordered_set<Cell*> closedSet;
 
     m_startCell->m_g = 0;
     m_startCell->m_h = heuristic(*m_startCell, *m_goalCell);
     m_startCell->m_f = m_startCell->m_g + m_startCell->m_h;
     m_startCell->m_parent = nullptr;
 
+    // add start cell to openList
+    openSet.insert(m_startCell);
 
-    while (!openList.empty())
+    while (!openSet.empty())
     {
-        Cell* currCell = openList.top();
+        // current cell = node with lowest m_f in openList
+        Cell* currCell = *openSet.begin();
 
-        // check if we've reached goalCell
-        // if yes, return the path;
+        // if current cell is goal, reconstruct and return path
         if (*currCell == *m_goalCell)
         {
             std::vector<Cell*> path;
@@ -89,49 +85,45 @@ std::vector<Cell*> Grid::astar()
             return path;
         }
 
-        // Once we're done with the current node,
-        // remove it from open list, and add it to closed list.
-        closedList.push_back(openList.top());
-        openList.pop();
-        auto it = std::find(openListMembership.begin(), openListMembership.end(), currCell);
-        if (it != openListMembership.end())
-        {
-            openListMembership.erase(it);
-        }
+        // remove current cell from openList
+        openSet.erase(currCell);
 
-        std::vector<std::pair<int, int>> neighbors = getValidNeighbors(*currCell);
+        // add current cell to closedList
+        closedSet.insert(currCell);
 
-        for (auto& n : neighbors)
+        // for each neighbor of current cell
+        for (auto& n : getValidNeighbors(*currCell))
         {
             Cell* neighborCell = &m_cells[n.first][n.second];
 
             // if neighbor in closedList
-            if (std::count(closedList.begin(), closedList.end(), neighborCell) > 0)
-            {
-                continue;   // skip already evaluated Cells
-            }
-
-            double tentative_g = currCell->m_g + 1.0;
-
-            // if neighbor is not in openList
-            if (std::count(openListMembership.begin(), openListMembership.end(), neighborCell) <= 0)
-            {
-                openList.push(neighborCell);
-                openListMembership.push_back(neighborCell);
-            }
-            else if (tentative_g >= neighborCell->m_g)
+            if (closedSet.find(neighborCell) != closedSet.end())
             {
                 continue;
             }
 
-            neighborCell->m_parent = currCell;
-            neighborCell->m_g = tentative_g;
-            neighborCell->m_h = heuristic(*neighborCell, *m_goalCell);
-            neighborCell->m_f = neighborCell->m_g + neighborCell->m_h;
-            openList.push(neighborCell);    // push the same cell again to update priority in priority_queue
+            // the distance from start to a neighbor, if we follow current path
+            // because I am using a uniform grid where you can only move to adjacent cells,
+            // the edge cost between any two neighbors is always 1
+            double tentative_g = currCell->m_g + 1.0;
+
+            // if neighbor is not in openList or this path to neighbor cell is better than any previous one
+            // this mean path from start to current cell cost less than path from start to any previous one
+            if (openSet.find(neighborCell) == openSet.end() || tentative_g < neighborCell->m_g)
+            {
+                openSet.erase(neighborCell);
+                neighborCell->m_parent = currCell;
+                neighborCell->m_g = tentative_g;
+                neighborCell->m_h = heuristic(*neighborCell, *m_goalCell);
+                neighborCell->m_f = neighborCell->m_g + neighborCell->m_h;
+
+                if (openSet.find(neighborCell) == openSet.end())
+                {
+                    openSet.insert(neighborCell);
+                }
+            }
         }
     }
-
     // failure no path exists, return empty path;
     return {};
 }
@@ -144,37 +136,30 @@ double Grid::heuristic(const Cell &currCell, const Cell &goalCell)
     return dx + dy;
 }
 
-    std::vector<std::pair<int, int>> Grid::getValidNeighbors(const Cell &currCell)
+std::vector<std::pair<int, int>> Grid::getValidNeighbors(const Cell &currCell)
+{
+    int currCellX = currCell.m_x;
+    int currCellY = currCell.m_y;
+
+    // pair<int, int>: first = row, second = col
+    std::vector<std::pair<int, int>> possible_neighbors {
+        {currCellX - 1, currCellY},
+        {currCellX + 1, currCellY},
+        {currCellX, currCellY - 1},
+        {currCellX, currCellY + 1}
+    };
+
+    std::vector<std::pair<int, int>> valid_neighbors {};
+
+    for (auto& pn : possible_neighbors)
     {
-        int currCellX = currCell.m_x;
-        int currCellY = currCell.m_y;
-
-        // pair<int, int>: first = row, second = col
-        std::vector<std::pair<int, int>> possible_neighbors {
-            {currCellX - 1, currCellY},
-            {currCellX + 1, currCellY},
-            {currCellX, currCellY - 1},
-            {currCellX, currCellY + 1}
-        };
-
-        std::vector<std::pair<int, int>> valid_neighbors {};
-
-        for (auto& pn : possible_neighbors)
+        if ((pn.first >= 0 && pn.second >=0) && (pn.first < m_rows && pn.second < m_cols) && (m_cells[pn.first][pn.second].getCellType() != CellType::obstacle))
         {
-            if ((pn.first >= 0 && pn.second >=0) && (pn.first < m_rows && pn.second < m_cols) && (m_cells[pn.first][pn.second].getCellType() != CellType::obstacle))
-            {
-                valid_neighbors.push_back(pn);
-            }
+            valid_neighbors.push_back(pn);
         }
-
-        // DEBUG: print valid_neighbors
-        // for (auto& vn : valid_neighbors)
-        // {
-        //     std::cout << vn.first << " " << vn.second << "\n";
-        // }
-
-        return valid_neighbors;
     }
+    return valid_neighbors;
+}
 
 void Grid::resetCells()
 {
