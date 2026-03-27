@@ -27,11 +27,18 @@ Grid::Grid(std::size_t rows, std::size_t cols, float cellSize)
 
 void Grid::draw(sf::RenderWindow &window)
 {
+    sf::Vector2f offset(
+        window.getSize().x / 2.f - m_cellSize * m_rows / 2.f,
+        window.getSize().y / 2.f - m_cellSize * m_cols / 2.f
+    );
+
     for (std::size_t row = 0; row < m_rows; ++row)
     {
         for (std::size_t col = 0; col < m_cols; ++col)
         {
-            m_cells[row][col].setSquarePosition(sf::Vector2f(static_cast<float>(m_cellSize * row), static_cast<float>(m_cellSize * col)));
+            m_cells[row][col].setSquarePosition(
+                sf::Vector2f(row * m_cellSize, col * m_cellSize) + offset
+            );
             m_cells[row][col].draw(window);
         }
     }

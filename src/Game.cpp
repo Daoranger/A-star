@@ -8,7 +8,7 @@
 Game::Game()
     : m_window(sf::VideoMode( { 1200, 700 } ), "A* Pathfinding")
     , m_view(sf::FloatRect(sf::Vector2f(0, 0), sf::Vector2f(m_window.getPosition().x, m_window.getPosition().y)))
-    , m_grid(20, 20, 50)
+    , m_grid(50, 50, 50)
     , m_bStartSelected(false)
     , m_bGoalSelected(false)
     , m_bisDragging(false)
@@ -50,7 +50,15 @@ void Game::processEvents()
             sf::Vector2i pixelPos = mouseButtonPressedEvent->position;
             sf::Vector2f worldPos = m_window.mapPixelToCoords(pixelPos, m_view);
 
-            handleClickToggling(*mouseButtonPressedEvent, worldPos, m_bSelecting);
+            std::cout << worldPos.x << " " << worldPos.y << "\n";
+
+            sf::Vector2f gridOffset(
+                m_window.getSize().x / 2.f - m_grid.getCellSize() * m_grid.getCols() / 2.f,
+                m_window.getSize().y / 2.f - m_grid.getCellSize() * m_grid.getRows() / 2.f
+            );
+            sf::Vector2f localPos = worldPos - gridOffset;
+
+            handleClickToggling(*mouseButtonPressedEvent, localPos, m_bSelecting);
             m_bisDragging = true;
 
         }
@@ -95,13 +103,19 @@ void Game::processEvents()
             sf::Vector2i pixelPos = mouseMovedEvent->position;
             sf::Vector2f worldPos = m_window.mapPixelToCoords(pixelPos, m_view);
 
+            sf::Vector2f gridOffset(
+                m_window.getSize().x / 2.f - m_grid.getCellSize() * m_grid.getCols() / 2.f,
+                m_window.getSize().y / 2.f - m_grid.getCellSize() * m_grid.getRows() / 2.f
+            );
+            sf::Vector2f localPos = worldPos - gridOffset;
+
             if (m_bisDragging && m_bSelecting)
             {
-                handleDragSelecting(*mouseMovedEvent, worldPos);
+                handleDragSelecting(*mouseMovedEvent, localPos);
             }
             else if (m_bisDragging && !m_bSelecting)
             {
-                handleDragDeselecting(*mouseMovedEvent, worldPos);
+                handleDragDeselecting(*mouseMovedEvent, localPos);
             }
         }
 
