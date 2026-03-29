@@ -89,6 +89,24 @@ std::vector<Cell*> Grid::astar()
             }
             // change from goal-to-start order to start-to-goal order
             std::reverse(path.begin(), path.end());
+            for (auto& cell : openSet)
+            {
+                if (cell == m_goalCell || cell == m_startCell)
+                {
+                    continue;
+                }
+                cell->setCellType(CellType::frontier);
+            }
+
+            for (auto& cell : closedSet)
+            {
+                if (cell == m_goalCell || cell == m_startCell)
+                {
+                    continue;
+                }
+                cell->setCellType(CellType::explored);
+            }
+
             return path;
         }
 

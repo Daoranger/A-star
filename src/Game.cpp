@@ -8,7 +8,7 @@
 Game::Game()
     : m_window(sf::VideoMode( { 1200, 700 } ), "A* Pathfinding")
     , m_view(sf::FloatRect(sf::Vector2f(0, 0), sf::Vector2f(m_window.getPosition().x, m_window.getPosition().y)))
-    , m_grid(50, 50, 50)
+    , m_grid(10, 10, 50)
     , m_bStartSelected(false)
     , m_bGoalSelected(false)
     , m_bisDragging(false)
@@ -49,8 +49,6 @@ void Game::processEvents()
         {
             sf::Vector2i pixelPos = mouseButtonPressedEvent->position;
             sf::Vector2f worldPos = m_window.mapPixelToCoords(pixelPos, m_view);
-
-            std::cout << worldPos.x << " " << worldPos.y << "\n";
 
             sf::Vector2f gridOffset(
                 m_window.getSize().x / 2.f - m_grid.getCellSize() * m_grid.getCols() / 2.f,
@@ -124,12 +122,10 @@ void Game::processEvents()
         {
             if (mouseWheelScrolled->delta > 0)
             {
-                std::cout << "Scrolling up\n";
                 m_view.zoom(0.9f);
             }
             else if (mouseWheelScrolled->delta < 0)
             {
-                std::cout << "Scrolling down\n";
                 m_view.zoom(1.1f);
             }
 
@@ -336,7 +332,6 @@ void Game::handleAStar()
             for (int i = 1; i < path.size() - 1; ++i)
             {
                 path[i]->setCellType(CellType::path);
-                //std::cout << path[i]->m_x << " " << path[i]->m_y << "\n";
             }
         }
         else

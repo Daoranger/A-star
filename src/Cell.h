@@ -11,7 +11,9 @@ enum class CellType
     goal = 1,
     obstacle = 2,
     open = 3,
-    path = 4
+    path = 4,
+    frontier = 5,
+    explored = 6,
 };
 
 class Cell

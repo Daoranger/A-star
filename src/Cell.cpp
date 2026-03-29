@@ -41,9 +41,23 @@ void Cell::draw(sf::RenderWindow& window)
             setCellColor(sf::Color::White);
             break;
         case CellType::path:
+        {
             sf::Color orange(255, 165, 0);
             setCellColor(orange);
             break;
+        }
+        case CellType::frontier:
+        {
+            sf::Color cyan(0, 200, 255);
+            setCellColor(cyan);
+            break;
+        }
+        case CellType::explored:
+        {
+            sf::Color purple(147, 112, 219);
+            setCellColor(purple);
+            break;
+        }
     }
 
     m_square.setFillColor(m_cellColor);
