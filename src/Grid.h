@@ -11,6 +11,8 @@
 #include <cmath>
 #include "Cell.h"
 #include "Snapshot.h"
+#include <unordered_set>
+#include <set>
 
 struct CompareCell
 {
@@ -36,6 +38,8 @@ public:
     double heuristic(const Cell& currCell, const Cell& goalCell);
     std::vector<std::pair<int, int>> getValidNeighbors(const Cell& currCell);
     void resetCells();
+    std::vector<Cell*> extractNodes(const std::set<Cell*,CompareCell>& set);
+    std::vector<Cell*> extractNodes(const std::unordered_set<Cell*>& unordered_set);
 
     Cell* m_startCell;
     Cell* m_goalCell;

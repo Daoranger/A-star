@@ -5,8 +5,6 @@
 #include "Grid.h"
 #include "Snapshot.h"
 #include <iostream>
-#include <unordered_set>
-#include <set>
 
 Grid::Grid(std::size_t rows, std::size_t cols, float cellSize)
     : m_rows(rows)
@@ -72,6 +70,9 @@ std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snaps
 
     // add start cell to openList
     openSet.insert(m_startCell);
+    snapshot.m_openVector = extractNodes(openSet);
+    snapshot.m_closedVector = extractNodes(closedSet);
+    snapshots.push_back(snapshot);
 
     while (!openSet.empty())
     {
@@ -89,7 +90,7 @@ std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snaps
                 currCell = currCell->m_parent;
             }
             // change from goal-to-start order to start-to-goal order
-
+            std::reverse(path.begin(), path.end());
             return path;
         }
 
@@ -99,8 +100,8 @@ std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snaps
         // add current cell to closedList
         closedSet.insert(currCell);
 
-        // create new snapshot and push to the list of snapshots
-        snapshot.m_openVector.push_back(currCell);
+        snapshot.m_openVector = extractNodes(openSet);
+        snapshot.m_closedVector = extractNodes(closedSet);
         snapshots.push_back(snapshot);
 
         // for each neighbor of current cell
@@ -128,13 +129,11 @@ std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snaps
                 neighborCell->m_g = tentative_g;
                 neighborCell->m_h = heuristic(*neighborCell, *m_goalCell);
                 neighborCell->m_f = neighborCell->m_g + neighborCell->m_h;
+                openSet.insert(neighborCell);
 
-                if (openSet.find(neighborCell) == openSet.end())
-                {
-                    openSet.insert(neighborCell);
-                    snapshot.m_closedVector.push_back(neighborCell);
-                    snapshots.push_back(snapshot);
-                }
+                snapshot.m_openVector = extractNodes(openSet);
+                snapshot.m_closedVector = extractNodes(closedSet);
+                snapshots.push_back(snapshot);
             }
         }
     }
@@ -188,3 +187,15 @@ void Grid::resetCells()
         }
     }
 }
+
+std::vector<Cell*> Grid::extractNodes(const std::set<Cell*, CompareCell>& set)
+{
+    return std::vector<Cell*>(set.begin(), set.end());
+}
+
+std::vector<Cell*> Grid::extractNodes(const std::unordered_set<Cell*>& unordered_set)
+{
+    return std::vector<Cell*>(unordered_set.begin(), unordered_set.end());
+}
+
+

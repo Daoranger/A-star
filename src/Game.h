@@ -25,6 +25,7 @@ public:
     void handleClickToggling(const sf::Event::MouseButtonPressed& mouseEvent, const sf::Vector2f& worldPos, const bool bSelecting);
     void handleAStar(std::vector<Snapshot>& snapshots, Snapshot& snapshot);
     void clearSnapshots();
+    void prepareSnapshots();
 
 private:
     sf::RenderWindow m_window;

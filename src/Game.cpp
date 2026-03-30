@@ -8,7 +8,7 @@
 Game::Game()
     : m_window(sf::VideoMode( { 1200, 700 } ), "A* Pathfinding")
     , m_view(sf::FloatRect(sf::Vector2f(0, 0), sf::Vector2f(m_window.getPosition().x, m_window.getPosition().y)))
-    , m_grid(10, 10, 50)
+    , m_grid(50, 50, 50)
     , m_bStartSelected(false)
     , m_bGoalSelected(false)
     , m_bisDragging(false)
@@ -326,6 +326,7 @@ void Game::handleAStar(std::vector<Snapshot>& snapshots, Snapshot& snapshot)
         std::vector<Cell*> path = m_grid.astar(snapshots, snapshot);
 
         std::cout << "snapshots size: " << snapshots.size() << "\n";
+        prepareSnapshots();
         std::cout << "path size: " << path.size() << "\n";
 
         if (path.size() > 0)
@@ -351,4 +352,12 @@ void Game::clearSnapshots()
 {
     m_snapshots.clear();
     m_snapshot.clearSnapshot();
+}
+
+void Game::prepareSnapshots()
+{
+    for (auto& snapshot : m_snapshots)
+    {
+        snapshot.prepareSnapshot();
+    }
 }

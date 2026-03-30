@@ -12,6 +12,7 @@ class Snapshot
 {
 public:
     Snapshot();
+    void prepareSnapshot();
     void clearSnapshot();
     std::vector<Cell*> m_openVector;
     std::vector<Cell*> m_closedVector;
