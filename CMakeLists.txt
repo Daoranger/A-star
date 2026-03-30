@@ -17,6 +17,7 @@ add_executable(main
         src/Cell.cpp
         src/Game.cpp
         src/Grid.cpp
+        src/Snapshot.cpp
 )
 target_compile_features(main PRIVATE cxx_std_17)
 target_link_libraries(main PRIVATE SFML::Graphics)

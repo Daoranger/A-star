@@ -3,6 +3,7 @@
 //
 
 #include "Grid.h"
+#include "Snapshot.h"
 #include <iostream>
 #include <unordered_set>
 #include <set>
@@ -59,7 +60,7 @@ float Grid::getCellSize() const
     return m_cellSize;
 }
 
-std::vector<Cell*> Grid::astar()
+std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snapshot)
 {
     std::set<Cell*, CompareCell> openSet;
     std::unordered_set<Cell*> closedSet;
@@ -88,24 +89,6 @@ std::vector<Cell*> Grid::astar()
                 currCell = currCell->m_parent;
             }
             // change from goal-to-start order to start-to-goal order
-            std::reverse(path.begin(), path.end());
-            for (auto& cell : openSet)
-            {
-                if (cell == m_goalCell || cell == m_startCell)
-                {
-                    continue;
-                }
-                cell->setCellType(CellType::frontier);
-            }
-
-            for (auto& cell : closedSet)
-            {
-                if (cell == m_goalCell || cell == m_startCell)
-                {
-                    continue;
-                }
-                cell->setCellType(CellType::explored);
-            }
 
             return path;
         }
@@ -115,6 +98,10 @@ std::vector<Cell*> Grid::astar()
 
         // add current cell to closedList
         closedSet.insert(currCell);
+
+        // create new snapshot and push to the list of snapshots
+        snapshot.m_openVector.push_back(currCell);
+        snapshots.push_back(snapshot);
 
         // for each neighbor of current cell
         for (auto& n : getValidNeighbors(*currCell))
@@ -145,6 +132,8 @@ std::vector<Cell*> Grid::astar()
                 if (openSet.find(neighborCell) == openSet.end())
                 {
                     openSet.insert(neighborCell);
+                    snapshot.m_closedVector.push_back(neighborCell);
+                    snapshots.push_back(snapshot);
                 }
             }
         }

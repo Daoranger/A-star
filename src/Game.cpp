@@ -78,13 +78,14 @@ void Game::processEvents()
             {
                 if (!m_bPathGenerated)
                 {
-                    handleAStar();
+                    handleAStar(m_snapshots, m_snapshot);
                     m_bPathGenerated = true;
                 }
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num4)
             {
                 m_grid.resetCells();
+                clearSnapshots();
                 m_bPathGenerated = false;
             }
         }
@@ -318,12 +319,13 @@ void Game::handleClickToggling(const sf::Event::MouseButtonPressed &mouseEvent, 
     }
 }
 
-void Game::handleAStar()
+void Game::handleAStar(std::vector<Snapshot>& snapshots, Snapshot& snapshot)
 {
     if (m_bGoalSelected && m_bStartSelected)
     {
-        std::vector<Cell*> path = m_grid.astar();
+        std::vector<Cell*> path = m_grid.astar(snapshots, snapshot);
 
+        std::cout << "snapshots size: " << snapshots.size() << "\n";
         std::cout << "path size: " << path.size() << "\n";
 
         if (path.size() > 0)
@@ -343,4 +345,10 @@ void Game::handleAStar()
     {
         std::cout << "Start cell or Goal cell is not selected\n";
     }
+}
+
+void Game::clearSnapshots()
+{
+    m_snapshots.clear();
+    m_snapshot.clearSnapshot();
 }
