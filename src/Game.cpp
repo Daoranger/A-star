@@ -163,7 +163,6 @@ void Game::update()
 
         if (!m_bFinishedAnimation)
         {
-            std::cout << "Gello\n";
             m_snapshots[m_snapshotIndex].prepareSnapshot();
         }
     }
@@ -174,10 +173,6 @@ void Game::update()
         {
             path[i]->setCellType(CellType::path);
         }
-    }
-    else
-    {
-        std::cout << "No path exist\n";
     }
 }
 
