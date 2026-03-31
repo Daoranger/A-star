@@ -8,7 +8,7 @@
 Game::Game()
     : m_window(sf::VideoMode( { 1200, 700 } ), "A* Pathfinding")
     , m_view(sf::FloatRect(sf::Vector2f(0, 0), sf::Vector2f(m_window.getPosition().x, m_window.getPosition().y)))
-    , m_grid(20, 20, 50)
+    , m_grid(50, 50, 50)
     , m_bStartSelected(false)
     , m_bGoalSelected(false)
     , m_bisDragging(false)
@@ -50,7 +50,13 @@ void Game::processEvents()
             sf::Vector2i pixelPos = mouseButtonPressedEvent->position;
             sf::Vector2f worldPos = m_window.mapPixelToCoords(pixelPos, m_view);
 
-            handleClickToggling(*mouseButtonPressedEvent, worldPos, m_bSelecting);
+            sf::Vector2f gridOffset(
+                m_window.getSize().x / 2.f - m_grid.getCellSize() * m_grid.getCols() / 2.f,
+                m_window.getSize().y / 2.f - m_grid.getCellSize() * m_grid.getRows() / 2.f
+            );
+            sf::Vector2f localPos = worldPos - gridOffset;
+
+            handleClickToggling(*mouseButtonPressedEvent, localPos, m_bSelecting);
             m_bisDragging = true;
 
         }
@@ -72,13 +78,14 @@ void Game::processEvents()
             {
                 if (!m_bPathGenerated)
                 {
-                    handleAStar();
+                    handleAStar(m_snapshots, m_snapshot);
                     m_bPathGenerated = true;
                 }
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num4)
             {
                 m_grid.resetCells();
+                clearSnapshots();
                 m_bPathGenerated = false;
             }
         }
@@ -95,13 +102,19 @@ void Game::processEvents()
             sf::Vector2i pixelPos = mouseMovedEvent->position;
             sf::Vector2f worldPos = m_window.mapPixelToCoords(pixelPos, m_view);
 
+            sf::Vector2f gridOffset(
+                m_window.getSize().x / 2.f - m_grid.getCellSize() * m_grid.getCols() / 2.f,
+                m_window.getSize().y / 2.f - m_grid.getCellSize() * m_grid.getRows() / 2.f
+            );
+            sf::Vector2f localPos = worldPos - gridOffset;
+
             if (m_bisDragging && m_bSelecting)
             {
-                handleDragSelecting(*mouseMovedEvent, worldPos);
+                handleDragSelecting(*mouseMovedEvent, localPos);
             }
             else if (m_bisDragging && !m_bSelecting)
             {
-                handleDragDeselecting(*mouseMovedEvent, worldPos);
+                handleDragDeselecting(*mouseMovedEvent, localPos);
             }
         }
 
@@ -110,12 +123,10 @@ void Game::processEvents()
         {
             if (mouseWheelScrolled->delta > 0)
             {
-                std::cout << "Scrolling up\n";
                 m_view.zoom(0.9f);
             }
             else if (mouseWheelScrolled->delta < 0)
             {
-                std::cout << "Scrolling down\n";
                 m_view.zoom(1.1f);
             }
 
@@ -126,7 +137,6 @@ void Game::processEvents()
 
 void Game::update()
 {
-
     if (!m_bStartSelected)
     {
         m_currentCellType = CellType::start;
@@ -138,6 +148,31 @@ void Game::update()
     else
     {
         m_currentCellType = CellType::obstacle;
+    }
+
+    if (m_bPathGenerated)
+    {
+        if (m_clock.getElapsedTime().asSeconds() > m_delay)
+        {
+            if (m_snapshotIndex < m_snapshots.size() - 1)
+                m_snapshotIndex++;
+            else
+                m_bFinishedAnimation = true;
+            m_clock.restart();
+        }
+
+        if (!m_bFinishedAnimation)
+        {
+            m_snapshots[m_snapshotIndex].prepareSnapshot();
+        }
+    }
+
+    if (path.size() > 0 && m_bFinishedAnimation)
+    {
+        for (int i = 1; i < path.size() - 1; ++i)
+        {
+            path[i]->setCellType(CellType::path);
+        }
     }
 }
 
@@ -308,30 +343,23 @@ void Game::handleClickToggling(const sf::Event::MouseButtonPressed &mouseEvent, 
     }
 }
 
-void Game::handleAStar()
+void Game::handleAStar(std::vector<Snapshot>& snapshots, Snapshot& snapshot)
 {
     if (m_bGoalSelected && m_bStartSelected)
     {
-        std::vector<Cell*> path = m_grid.astar();
+        path = m_grid.astar(snapshots, snapshot);
 
+        std::cout << "snapshots size: " << snapshots.size() << "\n";
         std::cout << "path size: " << path.size() << "\n";
-
-        if (path.size() > 0)
-        {
-            // exclude the start and goal cell for now
-            for (int i = 1; i < path.size() - 1; ++i)
-            {
-                path[i]->setCellType(CellType::path);
-                //std::cout << path[i]->m_x << " " << path[i]->m_y << "\n";
-            }
-        }
-        else
-        {
-            std::cout << "No path exist\n";
-        }
     }
     else
     {
         std::cout << "Start cell or Goal cell is not selected\n";
     }
+}
+
+void Game::clearSnapshots()
+{
+    m_snapshots.clear();
+    m_snapshot.clearSnapshot();
 }

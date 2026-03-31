@@ -3,9 +3,8 @@
 //
 
 #include "Grid.h"
+#include "Snapshot.h"
 #include <iostream>
-#include <unordered_set>
-#include <set>
 
 Grid::Grid(std::size_t rows, std::size_t cols, float cellSize)
     : m_rows(rows)
@@ -27,11 +26,18 @@ Grid::Grid(std::size_t rows, std::size_t cols, float cellSize)
 
 void Grid::draw(sf::RenderWindow &window)
 {
+    sf::Vector2f offset(
+        window.getSize().x / 2.f - m_cellSize * m_rows / 2.f,
+        window.getSize().y / 2.f - m_cellSize * m_cols / 2.f
+    );
+
     for (std::size_t row = 0; row < m_rows; ++row)
     {
         for (std::size_t col = 0; col < m_cols; ++col)
         {
-            m_cells[row][col].setSquarePosition(sf::Vector2f(static_cast<float>(m_cellSize * row), static_cast<float>(m_cellSize * col)));
+            m_cells[row][col].setSquarePosition(
+                sf::Vector2f(row * m_cellSize, col * m_cellSize) + offset
+            );
             m_cells[row][col].draw(window);
         }
     }
@@ -52,7 +58,7 @@ float Grid::getCellSize() const
     return m_cellSize;
 }
 
-std::vector<Cell*> Grid::astar()
+std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snapshot)
 {
     std::set<Cell*, CompareCell> openSet;
     std::unordered_set<Cell*> closedSet;
@@ -64,6 +70,9 @@ std::vector<Cell*> Grid::astar()
 
     // add start cell to openList
     openSet.insert(m_startCell);
+    snapshot.m_openVector = extractNodes(openSet);
+    snapshot.m_closedVector = extractNodes(closedSet);
+    snapshots.push_back(snapshot);
 
     while (!openSet.empty())
     {
@@ -91,6 +100,10 @@ std::vector<Cell*> Grid::astar()
         // add current cell to closedList
         closedSet.insert(currCell);
 
+        snapshot.m_openVector = extractNodes(openSet);
+        snapshot.m_closedVector = extractNodes(closedSet);
+        snapshots.push_back(snapshot);
+
         // for each neighbor of current cell
         for (auto& n : getValidNeighbors(*currCell))
         {
@@ -116,11 +129,11 @@ std::vector<Cell*> Grid::astar()
                 neighborCell->m_g = tentative_g;
                 neighborCell->m_h = heuristic(*neighborCell, *m_goalCell);
                 neighborCell->m_f = neighborCell->m_g + neighborCell->m_h;
+                openSet.insert(neighborCell);
 
-                if (openSet.find(neighborCell) == openSet.end())
-                {
-                    openSet.insert(neighborCell);
-                }
+                snapshot.m_openVector = extractNodes(openSet);
+                snapshot.m_closedVector = extractNodes(closedSet);
+                snapshots.push_back(snapshot);
             }
         }
     }
@@ -133,7 +146,7 @@ double Grid::heuristic(const Cell &currCell, const Cell &goalCell)
     // Manhattan distance
     double dx = std::abs(currCell.m_x - goalCell.m_x);
     double dy = std::abs(currCell.m_y - goalCell.m_y);
-    return dx + dy;
+    return (dx + dy) * 1.001; // tiny nudge breaks ties
 }
 
 std::vector<std::pair<int, int>> Grid::getValidNeighbors(const Cell &currCell)
@@ -174,3 +187,15 @@ void Grid::resetCells()
         }
     }
 }
+
+std::vector<Cell*> Grid::extractNodes(const std::set<Cell*, CompareCell>& set)
+{
+    return std::vector<Cell*>(set.begin(), set.end());
+}
+
+std::vector<Cell*> Grid::extractNodes(const std::unordered_set<Cell*>& unordered_set)
+{
+    return std::vector<Cell*>(unordered_set.begin(), unordered_set.end());
+}
+
+

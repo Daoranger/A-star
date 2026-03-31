@@ -6,6 +6,7 @@
 #define PATHFINDING_PATHFINDING_H
 
 #include "Grid.h"
+#include "Snapshot.h"
 #include "SFML/Graphics/RenderWindow.hpp"
 
 
@@ -22,18 +23,28 @@ public:
     void handleDragSelecting(const sf::Event::MouseMoved& mouseEvent, const sf::Vector2f& worldPos);
     void handleDragDeselecting(const sf::Event::MouseMoved& mouseEvent, const sf::Vector2f& worldPos);
     void handleClickToggling(const sf::Event::MouseButtonPressed& mouseEvent, const sf::Vector2f& worldPos, const bool bSelecting);
-    void handleAStar();
+    void handleAStar(std::vector<Snapshot>& snapshots, Snapshot& snapshot);
+    void clearSnapshots();
+    void prepareSnapshots();
 
 private:
     sf::RenderWindow m_window;
     sf::View m_view;
     Grid m_grid;
     CellType m_currentCellType {CellType::start};
+    std::vector<Snapshot> m_snapshots;
+    Snapshot m_snapshot;
+    int m_snapshotIndex = 0;
+    sf::Clock m_clock;
+    float m_delay = 0.001;
+    std::vector<Cell*> path;
+
     bool m_bStartSelected;
     bool m_bGoalSelected;
     bool m_bisDragging;
     bool m_bSelecting;
     bool m_bPathGenerated;
+    bool m_bFinishedAnimation = false;
 
 };
 
