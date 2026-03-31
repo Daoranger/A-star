@@ -137,7 +137,6 @@ void Game::processEvents()
 
 void Game::update()
 {
-
     if (!m_bStartSelected)
     {
         m_currentCellType = CellType::start;
@@ -149,6 +148,36 @@ void Game::update()
     else
     {
         m_currentCellType = CellType::obstacle;
+    }
+
+    if (m_bPathGenerated)
+    {
+        if (m_clock.getElapsedTime().asSeconds() > m_delay)
+        {
+            if (m_snapshotIndex < m_snapshots.size() - 1)
+                m_snapshotIndex++;
+            else
+                m_bFinishedAnimation = true;
+            m_clock.restart();
+        }
+
+        if (!m_bFinishedAnimation)
+        {
+            std::cout << "Gello\n";
+            m_snapshots[m_snapshotIndex].prepareSnapshot();
+        }
+    }
+
+    if (path.size() > 0 && m_bFinishedAnimation)
+    {
+        for (int i = 1; i < path.size() - 1; ++i)
+        {
+            path[i]->setCellType(CellType::path);
+        }
+    }
+    else
+    {
+        std::cout << "No path exist\n";
     }
 }
 
@@ -323,24 +352,10 @@ void Game::handleAStar(std::vector<Snapshot>& snapshots, Snapshot& snapshot)
 {
     if (m_bGoalSelected && m_bStartSelected)
     {
-        std::vector<Cell*> path = m_grid.astar(snapshots, snapshot);
+        path = m_grid.astar(snapshots, snapshot);
 
         std::cout << "snapshots size: " << snapshots.size() << "\n";
-        prepareSnapshots();
         std::cout << "path size: " << path.size() << "\n";
-
-        if (path.size() > 0)
-        {
-            // exclude the start and goal cell for now
-            for (int i = 1; i < path.size() - 1; ++i)
-            {
-                path[i]->setCellType(CellType::path);
-            }
-        }
-        else
-        {
-            std::cout << "No path exist\n";
-        }
     }
     else
     {
@@ -352,12 +367,4 @@ void Game::clearSnapshots()
 {
     m_snapshots.clear();
     m_snapshot.clearSnapshot();
-}
-
-void Game::prepareSnapshots()
-{
-    for (auto& snapshot : m_snapshots)
-    {
-        snapshot.prepareSnapshot();
-    }
 }

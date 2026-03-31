@@ -146,7 +146,7 @@ double Grid::heuristic(const Cell &currCell, const Cell &goalCell)
     // Manhattan distance
     double dx = std::abs(currCell.m_x - goalCell.m_x);
     double dy = std::abs(currCell.m_y - goalCell.m_y);
-    return dx + dy;
+    return (dx + dy) * 1.001; // tiny nudge breaks ties
 }
 
 std::vector<std::pair<int, int>> Grid::getValidNeighbors(const Cell &currCell)

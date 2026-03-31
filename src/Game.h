@@ -34,12 +34,17 @@ private:
     CellType m_currentCellType {CellType::start};
     std::vector<Snapshot> m_snapshots;
     Snapshot m_snapshot;
+    int m_snapshotIndex = 0;
+    sf::Clock m_clock;
+    float m_delay = 0.001;
+    std::vector<Cell*> path;
 
     bool m_bStartSelected;
     bool m_bGoalSelected;
     bool m_bisDragging;
     bool m_bSelecting;
     bool m_bPathGenerated;
+    bool m_bFinishedAnimation = false;
 
 };
 
