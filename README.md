@@ -1,6 +1,9 @@
 # A* pathfinding
 
+## Blogs
 
+### 3/30/2026 
+- Visualization!
 ![Demo](A-star.gif)
 
 ## About
