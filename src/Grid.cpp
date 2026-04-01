@@ -58,7 +58,7 @@ float Grid::getCellSize() const
     return m_cellSize;
 }
 
-std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snapshot)
+std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snapshot, std::size_t& nodesExpanded)
 {
     std::set<Cell*, CompareCell> openSet;
     std::unordered_set<Cell*> closedSet;
@@ -91,6 +91,7 @@ std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snaps
             }
             // change from goal-to-start order to start-to-goal order
             std::reverse(path.begin(), path.end());
+            nodesExpanded = closedSet.size() + 1;
             return path;
         }
 
@@ -138,6 +139,7 @@ std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snaps
         }
     }
     // failure no path exists, return empty path;
+    nodesExpanded = closedSet.size();
     return {};
 }
 

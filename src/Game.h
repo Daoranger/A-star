@@ -7,6 +7,7 @@
 
 #include "Grid.h"
 #include "Snapshot.h"
+#include "Metrics.h"
 #include "SFML/Graphics/RenderWindow.hpp"
 
 
@@ -35,9 +36,12 @@ private:
     std::vector<Snapshot> m_snapshots;
     Snapshot m_snapshot;
     int m_snapshotIndex = 0;
-    sf::Clock m_clock;
+    sf::Clock m_snapshotClock;
     float m_delay = 0.001;
     std::vector<Cell*> path;
+
+    sf::Clock m_imguiClock;
+    Metrics m_metrics;
 
     bool m_bStartSelected;
     bool m_bGoalSelected;

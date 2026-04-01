@@ -4,6 +4,8 @@
 
 #include "Game.h"
 #include <iostream>
+#include "imgui.h"
+#include "imgui-SFML.h"
 
 Game::Game()
     : m_window(sf::VideoMode( { 1200, 700 } ), "A* Pathfinding")
@@ -16,6 +18,7 @@ Game::Game()
     , m_bPathGenerated(false)
 {
     m_window.setView(m_view);
+    ImGui::SFML::Init(m_window);
 }
 
 void Game::run()
@@ -32,6 +35,8 @@ void Game::processEvents()
 {
     while ( const std::optional event = m_window.pollEvent() )
     {
+        ImGui::SFML::ProcessEvent(m_window, *event);
+
         if (event->is<sf::Event::Closed>())
             m_window.close();
 
@@ -152,13 +157,13 @@ void Game::update()
 
     if (m_bPathGenerated)
     {
-        if (m_clock.getElapsedTime().asSeconds() > m_delay)
+        if (m_snapshotClock.getElapsedTime().asSeconds() > m_delay)
         {
             if (m_snapshotIndex < m_snapshots.size() - 1)
                 m_snapshotIndex++;
             else
                 m_bFinishedAnimation = true;
-            m_clock.restart();
+            m_snapshotClock.restart();
         }
 
         if (!m_bFinishedAnimation)
@@ -174,12 +179,25 @@ void Game::update()
             path[i]->setCellType(CellType::path);
         }
     }
+
+    ImGui::SFML::Update(m_window, m_imguiClock.restart());
+
+    ImGui::SetNextWindowSize(ImVec2(400, 200)); // change ImGUI size
+    ImGui::Begin("Metrics");                    // start ImGUI window, with title "Metrics"
+    ImGui::SetWindowFontScale(2.0f);            // scale up font of ImGUI by 2
+    ImGui::Text("Path Found: %s", m_metrics.m_pathFound ? "Yes" : "No");
+    ImGui::Text("Path Length: %zu", m_metrics.m_pathSize);
+    ImGui::Text("Nodes Expanded: %zu", m_metrics.m_nodesExpanded);
+    ImGui::Text("Search Time: %.2f ms", m_metrics.m_searchTime);
+    ImGui::End();
+
 }
 
 void Game::draw()
 {
     m_window.clear(sf::Color::White);
     m_grid.draw(m_window);
+    ImGui::SFML::Render(m_window);
     m_window.display();
 }
 
@@ -345,12 +363,18 @@ void Game::handleClickToggling(const sf::Event::MouseButtonPressed &mouseEvent, 
 
 void Game::handleAStar(std::vector<Snapshot>& snapshots, Snapshot& snapshot)
 {
+    std::size_t nodesExpanded {};
+
     if (m_bGoalSelected && m_bStartSelected)
     {
-        path = m_grid.astar(snapshots, snapshot);
+        auto start = std::chrono::high_resolution_clock::now();
+        path = m_grid.astar(snapshots, snapshot, nodesExpanded);
+        auto end = std::chrono::high_resolution_clock::now();
 
-        std::cout << "snapshots size: " << snapshots.size() << "\n";
-        std::cout << "path size: " << path.size() << "\n";
+        m_metrics.m_pathFound = !path.empty();
+        m_metrics.m_pathSize = path.size();
+        m_metrics.m_nodesExpanded = nodesExpanded;
+        m_metrics.m_searchTime = std::chrono::duration<double, std::milli>(end - start).count();
     }
     else
     {

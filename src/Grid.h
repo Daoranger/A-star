@@ -34,7 +34,7 @@ public:
     std::size_t getRows() const;
     std::size_t getCols() const;
     float getCellSize() const;
-    std::vector<Cell*> astar(std::vector<Snapshot>& snapshots, Snapshot& snapshot);
+    std::vector<Cell*> astar(std::vector<Snapshot>& snapshots, Snapshot& snapshot, std::size_t& nodesExpanded);
     double heuristic(const Cell& currCell, const Cell& goalCell);
     std::vector<std::pair<int, int>> getValidNeighbors(const Cell& currCell);
     void resetCells();

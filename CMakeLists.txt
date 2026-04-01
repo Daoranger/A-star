@@ -12,6 +12,21 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
+FetchContent_Declare(imgui
+        GIT_REPOSITORY https://github.com/ocornut/imgui.git
+        GIT_TAG v1.92.6
+        GIT_SHALLOW ON)
+FetchContent_MakeAvailable(imgui)
+
+FetchContent_Declare(imgui-sfml
+        GIT_REPOSITORY https://github.com/SFML/imgui-sfml.git
+        GIT_TAG master
+        GIT_SHALLOW ON)
+set(IMGUI_DIR ${imgui_SOURCE_DIR})
+set(IMGUI_SFML_FIND_SFML OFF)
+set(IMGUI_SFML_IMGUI_STATIC ON)
+FetchContent_MakeAvailable(imgui-sfml)
+
 add_executable(main
         src/main.cpp
         src/Cell.cpp
@@ -20,6 +35,6 @@ add_executable(main
         src/Snapshot.cpp
 )
 target_compile_features(main PRIVATE cxx_std_17)
-target_link_libraries(main PRIVATE SFML::Graphics)
+target_link_libraries(main PRIVATE SFML::Graphics ImGui-SFML::ImGui-SFML)
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT main)
