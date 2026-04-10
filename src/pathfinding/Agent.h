@@ -1,7 +1,7 @@
 //
 // Created by hoang on 4/2/2026.
 //
-#include "Cell.h"
+#include "../grid/Cell.h"
 
 #ifndef PATHFINDING_AGENT_H
 #define PATHFINDING_AGENT_H

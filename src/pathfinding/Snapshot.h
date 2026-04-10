@@ -5,7 +5,7 @@
 #ifndef PATHFINDING_SNAPSHOT_H
 #define PATHFINDING_SNAPSHOT_H
 #include <vector>
-#include "Cell.h"
+#include "../grid/cell.h"
 
 
 class Snapshot

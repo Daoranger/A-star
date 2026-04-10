@@ -15,20 +15,20 @@ void Snapshot::prepareSnapshot()
 
     for (auto& cell : m_openVector)
     {
-        if ((cell->getCellType() == CellType::start) || (cell->getCellType() == CellType::goal))
+        if ((cell->getType() == CellType::start) || (cell->getType() == CellType::goal))
         {
             continue;
         }
-        cell->setCellType(CellType::frontier);
+        cell->setType(CellType::frontier);
     }
 
     for (auto& cell : m_closedVector)
     {
-        if ((cell->getCellType() == CellType::start) || (cell->getCellType() == CellType::goal))
+        if ((cell->getType() == CellType::start) || (cell->getType() == CellType::goal))
         {
             continue;
         }
-        cell->setCellType(CellType::explored);
+        cell->setType(CellType::explored);
     }
 }
 

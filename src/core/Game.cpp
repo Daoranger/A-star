@@ -2,7 +2,7 @@
 // Created by hoang on 2/13/2026.
 //
 
-#include "Game.h"
+#include "../core//Game.h"
 #include <iostream>
 #include "imgui.h"
 #include "imgui-SFML.h"
@@ -10,7 +10,7 @@
 Game::Game()
     : m_window(sf::VideoMode( { 1200, 700 } ), "A* Pathfinding")
     , m_view(sf::FloatRect(sf::Vector2f(0, 0), sf::Vector2f(m_window.getPosition().x, m_window.getPosition().y)))
-    , m_grid(50, 50, 50)
+    , m_grid(50, 50, 100)
     , m_bStartSelected(false)
     , m_bGoalSelected(false)
     , m_bisDragging(false)
@@ -176,7 +176,7 @@ void Game::update()
     {
         for (int i = 1; i < path.size() - 1; ++i)
         {
-            path[i]->setCellType(CellType::path);
+            path[i]->setType(CellType::path);
         }
     }
 
@@ -211,12 +211,12 @@ void Game::handleDragSelecting(const sf::Event::MouseMoved& mouseEvent, const sf
         return;
     }
 
-    switch (m_grid.m_cells[row][col].getCellType())
+    switch (m_grid.m_cells[row][col].getType())
     {
         case CellType::open:
         case CellType::obstacle:
         {
-            m_grid.m_cells[row][col].setCellType(m_currentCellType);
+            m_grid.m_cells[row][col].setType(m_currentCellType);
             if (!m_bStartSelected)
             {
                 m_grid.m_startCell = &m_grid.m_cells[row][col];
@@ -252,12 +252,12 @@ void Game::handleDragDeselecting(const sf::Event::MouseMoved &mouseEvent, const 
         return;
     }
 
-    switch (m_grid.m_cells[row][col].getCellType())
+    switch (m_grid.m_cells[row][col].getType())
     {
 
         case CellType::start:
         {
-            m_grid.m_cells[row][col].setCellType(CellType::open);
+            m_grid.m_cells[row][col].setType(CellType::open);
             m_grid.m_startCell = nullptr;
             if (m_bStartSelected)
 
@@ -266,7 +266,7 @@ void Game::handleDragDeselecting(const sf::Event::MouseMoved &mouseEvent, const 
         }
         case CellType::goal:
         {
-            m_grid.m_cells[row][col].setCellType(CellType::open);
+            m_grid.m_cells[row][col].setType(CellType::open);
             m_grid.m_goalCell = nullptr;
             if (m_bGoalSelected)
                 m_bGoalSelected = false;
@@ -274,7 +274,7 @@ void Game::handleDragDeselecting(const sf::Event::MouseMoved &mouseEvent, const 
         }
         case CellType::obstacle:
         {
-            m_grid.m_cells[row][col].setCellType(CellType::open);
+            m_grid.m_cells[row][col].setType(CellType::open);
             break;
         }
         case CellType::open:
@@ -298,12 +298,12 @@ void Game::handleClickToggling(const sf::Event::MouseButtonPressed &mouseEvent, 
     // switch case to handle toggling start, goal, and obstacle
     if (isSelecting)
     {
-        switch (m_grid.m_cells[row][col].getCellType())
+        switch (m_grid.m_cells[row][col].getType())
         {
             case CellType::open:
             case CellType::obstacle:
             {
-                m_grid.m_cells[row][col].setCellType(m_currentCellType);
+                m_grid.m_cells[row][col].setType(m_currentCellType);
                 if (!m_bStartSelected)
                 {
                     m_grid.m_startCell = &m_grid.m_cells[row][col];
@@ -328,12 +328,12 @@ void Game::handleClickToggling(const sf::Event::MouseButtonPressed &mouseEvent, 
     }
     else
     {
-        switch (m_grid.m_cells[row][col].getCellType())
+        switch (m_grid.m_cells[row][col].getType())
         {
 
             case CellType::start:
             {
-                m_grid.m_cells[row][col].setCellType(CellType::open);
+                m_grid.m_cells[row][col].setType(CellType::open);
                 m_grid.m_startCell = nullptr;
                 if (m_bStartSelected)
 
@@ -342,7 +342,7 @@ void Game::handleClickToggling(const sf::Event::MouseButtonPressed &mouseEvent, 
             }
             case CellType::goal:
             {
-                m_grid.m_cells[row][col].setCellType(CellType::open);
+                m_grid.m_cells[row][col].setType(CellType::open);
                 m_grid.m_goalCell = nullptr;
                 if (m_bGoalSelected)
                     m_bGoalSelected = false;
@@ -350,7 +350,7 @@ void Game::handleClickToggling(const sf::Event::MouseButtonPressed &mouseEvent, 
             }
             case CellType::obstacle:
             {
-                m_grid.m_cells[row][col].setCellType(CellType::open);
+                m_grid.m_cells[row][col].setType(CellType::open);
                 break;
             }
             case CellType::open:
