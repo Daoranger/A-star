@@ -51,9 +51,6 @@ public:
     // Set the fill color of cell's square.
     void setColor(sf::Color color);
 
-    // Reset the g, h, f, parent, and type of cell to default.
-    void reset();
-
     // Return true if current cell and other cell's x and y are equals
     bool operator==(const Cell& other) const;
 

@@ -63,6 +63,7 @@ std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snaps
     std::set<Cell*, CompareCell> openSet;
     std::unordered_set<Cell*> closedSet;
 
+    // start cell
     start_cell_->g_ = 0;
     start_cell_->h_ = heuristic(*start_cell_, *goal_cell_);
     start_cell_->f_ = start_cell_->g_ + start_cell_->h_;
@@ -74,6 +75,7 @@ std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snaps
     snapshot.m_closedVector = extractNodes(closedSet);
     snapshots.push_back(snapshot);
 
+    // processing current cell in open set
     while (!openSet.empty())
     {
         // current cell = node with lowest m_f in openList
@@ -131,15 +133,13 @@ std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snaps
                 neighborCell->h_ = heuristic(*neighborCell, *goal_cell_);
                 neighborCell->f_ = neighborCell->g_ + neighborCell->h_;
                 openSet.insert(neighborCell);
-
-                snapshot.m_openVector = extractNodes(openSet);
-                snapshot.m_closedVector = extractNodes(closedSet);
-                snapshots.push_back(snapshot);
             }
         }
     }
-    // failure no path exists, return empty path;
+
     nodesExpanded = closedSet.size();
+
+    // failure no path exists, return empty path;
     return {};
 }
 
@@ -174,20 +174,6 @@ std::vector<std::pair<int, int>> Grid::getValidNeighbors(const Cell &currCell)
         }
     }
     return valid_neighbors;
-}
-
-void Grid::resetCells()
-{
-    for (int i = 0; i < rows_; ++i)
-    {
-        for (int j = 0; j < cols_; ++j)
-        {
-            if (cells_[i][j].getType() == CellType::path)
-            {
-                cells_[i][j].reset();
-            }
-        }
-    }
 }
 
 std::vector<Cell*> Grid::extractNodes(const std::set<Cell*, CompareCell>& set)

@@ -10,7 +10,7 @@
 Game::Game()
     : m_window(sf::VideoMode( { 1200, 700 } ), "A* Pathfinding")
     , m_view(sf::FloatRect(sf::Vector2f(0, 0), sf::Vector2f(m_window.getPosition().x, m_window.getPosition().y)))
-    , m_grid(50, 50, 100)
+    , m_grid(100, 100, 100)
     , m_bStartSelected(false)
     , m_bGoalSelected(false)
     , m_bisDragging(false)
@@ -89,7 +89,6 @@ void Game::processEvents()
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num4)
             {
-                m_grid.resetCells();
                 clearSnapshots();
                 m_bPathGenerated = false;
             }

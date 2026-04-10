@@ -76,15 +76,6 @@ void Cell::setColor(sf::Color color)
     cell_color_ = color;
 }
 
-void Cell::reset()
-{
-    g_ = std::numeric_limits<double>::infinity();
-    h_ = 0.0;
-    f_ = std::numeric_limits<double>::infinity();
-    parent_ = nullptr;
-    cell_type_ = CellType::open;
-}
-
 bool Cell::operator==(const Cell& other) const
 {
     return x_ == other.x_ && y_ == other.y_;
