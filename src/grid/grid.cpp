@@ -2,24 +2,24 @@
 // Created by hoang on 2/13/2026.
 //
 
-#include "Grid.h"
+#include "grid.h"
 #include "../pathfinding/Snapshot.h"
 #include <iostream>
 
 Grid::Grid(std::size_t rows, std::size_t cols, float cellSize)
-    : m_rows(rows)
-    , m_cols(cols)
-    , m_cellSize(cellSize)
-    , m_cells(m_rows, std::vector<Cell>(m_cols, Cell(m_cellSize, 0, 0)))
-    , m_startCell(nullptr)
-    , m_goalCell(nullptr)
+    : rows_(rows)
+    , cols_(cols)
+    , cell_size_(cellSize)
+    , cells_(rows_, std::vector<Cell>(cols_, Cell(cell_size_, 0, 0)))
+    , start_cell_(nullptr)
+    , goal_cell_(nullptr)
 {
     for (int i = 0; i < rows; ++i)
     {
         for (int j = 0; j < cols; ++j)
         {
-            m_cells[i][j].x_ = i;
-            m_cells[i][j].y_ = j;
+            cells_[i][j].x_ = i;
+            cells_[i][j].y_ = j;
         }
     }
 }
@@ -27,35 +27,35 @@ Grid::Grid(std::size_t rows, std::size_t cols, float cellSize)
 void Grid::draw(sf::RenderWindow &window)
 {
     sf::Vector2f offset(
-        window.getSize().x / 2.f - m_cellSize * m_rows / 2.f,
-        window.getSize().y / 2.f - m_cellSize * m_cols / 2.f
+        window.getSize().x / 2.f - cell_size_ * rows_ / 2.f,
+        window.getSize().y / 2.f - cell_size_ * cols_ / 2.f
     );
 
-    for (std::size_t row = 0; row < m_rows; ++row)
+    for (std::size_t row = 0; row < rows_; ++row)
     {
-        for (std::size_t col = 0; col < m_cols; ++col)
+        for (std::size_t col = 0; col < cols_; ++col)
         {
-            m_cells[row][col].setPosition(
-                sf::Vector2f(row * m_cellSize, col * m_cellSize) + offset
+            cells_[row][col].setPosition(
+                sf::Vector2f(row * cell_size_, col * cell_size_) + offset
             );
-            m_cells[row][col].draw(window);
+            cells_[row][col].draw(window);
         }
     }
 }
 
 std::size_t Grid::getRows() const
 {
-    return m_rows;
+    return rows_;
 }
 
 std::size_t Grid::getCols() const
 {
-    return m_cols;
+    return cols_;
 }
 
 float Grid::getCellSize() const
 {
-    return m_cellSize;
+    return cell_size_;
 }
 
 std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snapshot, std::size_t& nodesExpanded)
@@ -63,13 +63,13 @@ std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snaps
     std::set<Cell*, CompareCell> openSet;
     std::unordered_set<Cell*> closedSet;
 
-    m_startCell->g_ = 0;
-    m_startCell->h_ = heuristic(*m_startCell, *m_goalCell);
-    m_startCell->f_ = m_startCell->g_ + m_startCell->h_;
-    m_startCell->parent_ = nullptr;
+    start_cell_->g_ = 0;
+    start_cell_->h_ = heuristic(*start_cell_, *goal_cell_);
+    start_cell_->f_ = start_cell_->g_ + start_cell_->h_;
+    start_cell_->parent_ = nullptr;
 
     // add start cell to openList
-    openSet.insert(m_startCell);
+    openSet.insert(start_cell_);
     snapshot.m_openVector = extractNodes(openSet);
     snapshot.m_closedVector = extractNodes(closedSet);
     snapshots.push_back(snapshot);
@@ -80,7 +80,7 @@ std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snaps
         Cell* currCell = *openSet.begin();
 
         // if current cell is goal, reconstruct and return path
-        if (*currCell == *m_goalCell)
+        if (*currCell == *goal_cell_)
         {
             std::vector<Cell*> path;
 
@@ -108,7 +108,7 @@ std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snaps
         // for each neighbor of current cell
         for (auto& n : getValidNeighbors(*currCell))
         {
-            Cell* neighborCell = &m_cells[n.first][n.second];
+            Cell* neighborCell = &cells_[n.first][n.second];
 
             // if neighbor in closedList
             if (closedSet.find(neighborCell) != closedSet.end())
@@ -128,7 +128,7 @@ std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snaps
                 openSet.erase(neighborCell);
                 neighborCell->parent_ = currCell;
                 neighborCell->g_ = tentative_g;
-                neighborCell->h_ = heuristic(*neighborCell, *m_goalCell);
+                neighborCell->h_ = heuristic(*neighborCell, *goal_cell_);
                 neighborCell->f_ = neighborCell->g_ + neighborCell->h_;
                 openSet.insert(neighborCell);
 
@@ -168,7 +168,7 @@ std::vector<std::pair<int, int>> Grid::getValidNeighbors(const Cell &currCell)
 
     for (auto& pn : possible_neighbors)
     {
-        if ((pn.first >= 0 && pn.second >=0) && (pn.first < m_rows && pn.second < m_cols) && (m_cells[pn.first][pn.second].getType() != CellType::obstacle))
+        if ((pn.first >= 0 && pn.second >=0) && (pn.first < rows_ && pn.second < cols_) && (cells_[pn.first][pn.second].getType() != CellType::obstacle))
         {
             valid_neighbors.push_back(pn);
         }
@@ -178,13 +178,13 @@ std::vector<std::pair<int, int>> Grid::getValidNeighbors(const Cell &currCell)
 
 void Grid::resetCells()
 {
-    for (int i = 0; i < m_rows; ++i)
+    for (int i = 0; i < rows_; ++i)
     {
-        for (int j = 0; j < m_cols; ++j)
+        for (int j = 0; j < cols_; ++j)
         {
-            if (m_cells[i][j].getType() == CellType::path)
+            if (cells_[i][j].getType() == CellType::path)
             {
-                m_cells[i][j].reset();
+                cells_[i][j].reset();
             }
         }
     }

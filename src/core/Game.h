@@ -5,7 +5,7 @@
 #ifndef PATHFINDING_PATHFINDING_H
 #define PATHFINDING_PATHFINDING_H
 
-#include "../grid/Grid.h"
+#include "../grid/grid.h"
 #include "../pathfinding/Snapshot.h"
 #include "Metrics.h"
 #include "SFML/Graphics/RenderWindow.hpp"

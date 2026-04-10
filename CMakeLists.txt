@@ -31,7 +31,7 @@ add_executable(main
         src/core/main.cpp
         src/core/Game.cpp
         src/grid/cell.cpp
-        src/grid/Grid.cpp
+        src/grid/grid.cpp
         src/pathfinding/Agent.cpp
         src/pathfinding/Snapshot.cpp
 )

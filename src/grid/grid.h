@@ -1,6 +1,9 @@
+// Copyright 2026, Hoang Nguyen
 //
-// Created by hoang on 2/13/2026.
+// grid.h
 //
+// Defines the Grid class, which represents the 2D grid consisted
+// of a m x n cells, uses for interaction and visualization
 
 #ifndef PATHFINDING_GRID_H
 #define PATHFINDING_GRID_H
@@ -41,18 +44,16 @@ public:
     std::vector<Cell*> extractNodes(const std::set<Cell*,CompareCell>& set);
     std::vector<Cell*> extractNodes(const std::unordered_set<Cell*>& unordered_set);
 
-    Cell* m_startCell;
-    Cell* m_goalCell;
+    Cell* start_cell_;
+    Cell* goal_cell_;
 
 private:
-    std::size_t m_rows;
-    std::size_t m_cols;
-    float m_cellSize;
-
+    std::size_t rows_;
+    std::size_t cols_;
+    float cell_size_;
 
 public:
-    std::vector<std::vector<Cell>> m_cells;
-
+    std::vector<std::vector<Cell>> cells_;
 };
 
 

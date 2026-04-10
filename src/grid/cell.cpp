@@ -85,11 +85,6 @@ void Cell::reset()
     cell_type_ = CellType::open;
 }
 
-bool Cell::operator>(const Cell &other) const
-{
-    return f_ > other.f_;
-}
-
 bool Cell::operator==(const Cell& other) const
 {
     return x_ == other.x_ && y_ == other.y_;

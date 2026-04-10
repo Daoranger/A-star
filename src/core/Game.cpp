@@ -211,20 +211,20 @@ void Game::handleDragSelecting(const sf::Event::MouseMoved& mouseEvent, const sf
         return;
     }
 
-    switch (m_grid.m_cells[row][col].getType())
+    switch (m_grid.cells_[row][col].getType())
     {
         case CellType::open:
         case CellType::obstacle:
         {
-            m_grid.m_cells[row][col].setType(m_currentCellType);
+            m_grid.cells_[row][col].setType(m_currentCellType);
             if (!m_bStartSelected)
             {
-                m_grid.m_startCell = &m_grid.m_cells[row][col];
+                m_grid.start_cell_ = &m_grid.cells_[row][col];
                 m_bStartSelected = true;
             }
             else if (!m_bGoalSelected)
             {
-                m_grid.m_goalCell = &m_grid.m_cells[row][col];
+                m_grid.goal_cell_ = &m_grid.cells_[row][col];
                 m_bGoalSelected = true;
             }
             break;
@@ -252,13 +252,13 @@ void Game::handleDragDeselecting(const sf::Event::MouseMoved &mouseEvent, const 
         return;
     }
 
-    switch (m_grid.m_cells[row][col].getType())
+    switch (m_grid.cells_[row][col].getType())
     {
 
         case CellType::start:
         {
-            m_grid.m_cells[row][col].setType(CellType::open);
-            m_grid.m_startCell = nullptr;
+            m_grid.cells_[row][col].setType(CellType::open);
+            m_grid.start_cell_ = nullptr;
             if (m_bStartSelected)
 
                 m_bStartSelected = false;
@@ -266,15 +266,15 @@ void Game::handleDragDeselecting(const sf::Event::MouseMoved &mouseEvent, const 
         }
         case CellType::goal:
         {
-            m_grid.m_cells[row][col].setType(CellType::open);
-            m_grid.m_goalCell = nullptr;
+            m_grid.cells_[row][col].setType(CellType::open);
+            m_grid.goal_cell_ = nullptr;
             if (m_bGoalSelected)
                 m_bGoalSelected = false;
             break;
         }
         case CellType::obstacle:
         {
-            m_grid.m_cells[row][col].setType(CellType::open);
+            m_grid.cells_[row][col].setType(CellType::open);
             break;
         }
         case CellType::open:
@@ -298,20 +298,20 @@ void Game::handleClickToggling(const sf::Event::MouseButtonPressed &mouseEvent, 
     // switch case to handle toggling start, goal, and obstacle
     if (isSelecting)
     {
-        switch (m_grid.m_cells[row][col].getType())
+        switch (m_grid.cells_[row][col].getType())
         {
             case CellType::open:
             case CellType::obstacle:
             {
-                m_grid.m_cells[row][col].setType(m_currentCellType);
+                m_grid.cells_[row][col].setType(m_currentCellType);
                 if (!m_bStartSelected)
                 {
-                    m_grid.m_startCell = &m_grid.m_cells[row][col];
+                    m_grid.start_cell_ = &m_grid.cells_[row][col];
                     m_bStartSelected = true;
                 }
                 else if (!m_bGoalSelected)
                 {
-                    m_grid.m_goalCell = &m_grid.m_cells[row][col];
+                    m_grid.goal_cell_ = &m_grid.cells_[row][col];
                     m_bGoalSelected = true;
                 }
                 break;
@@ -328,13 +328,13 @@ void Game::handleClickToggling(const sf::Event::MouseButtonPressed &mouseEvent, 
     }
     else
     {
-        switch (m_grid.m_cells[row][col].getType())
+        switch (m_grid.cells_[row][col].getType())
         {
 
             case CellType::start:
             {
-                m_grid.m_cells[row][col].setType(CellType::open);
-                m_grid.m_startCell = nullptr;
+                m_grid.cells_[row][col].setType(CellType::open);
+                m_grid.start_cell_ = nullptr;
                 if (m_bStartSelected)
 
                     m_bStartSelected = false;
@@ -342,15 +342,15 @@ void Game::handleClickToggling(const sf::Event::MouseButtonPressed &mouseEvent, 
             }
             case CellType::goal:
             {
-                m_grid.m_cells[row][col].setType(CellType::open);
-                m_grid.m_goalCell = nullptr;
+                m_grid.cells_[row][col].setType(CellType::open);
+                m_grid.goal_cell_ = nullptr;
                 if (m_bGoalSelected)
                     m_bGoalSelected = false;
                 break;
             }
             case CellType::obstacle:
             {
-                m_grid.m_cells[row][col].setType(CellType::open);
+                m_grid.cells_[row][col].setType(CellType::open);
                 break;
             }
             case CellType::open:

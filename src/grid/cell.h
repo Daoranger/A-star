@@ -54,9 +54,6 @@ public:
     // Reset the g, h, f, parent, and type of cell to default.
     void reset();
 
-    // Return true if its f value is greater than the other cell.
-    bool operator>(const Cell& other) const;  // overloaded operator > so it can be use in greater<> comparator
-
     // Return true if current cell and other cell's x and y are equals
     bool operator==(const Cell& other) const;
 
