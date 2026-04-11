@@ -122,39 +122,42 @@ void Game::processEvents()
 
 void Game::update()
 {
-    if (app_state_ == AppState::kAnimating)
+    if (app_state_ == AppState::kAnimating && agent_)
     {
         if (snapshot_clock_.getElapsedTime().asSeconds() > delay_)
         {
-            if (snapshot_index_ < snapshots_.size() - 1)
+            if (agent_->snapshot_index_ < agent_->snapshots_.size() - 1)
             {
-                snapshot_index_++;
-                snapshots_[snapshot_index_].prepareSnapshot();
+                agent_->snapshot_index_++;
+                agent_->snapshots_[agent_->snapshot_index_].prepareSnapshot();
             }
             else
             {
                 app_state_ = AppState::kDone;
-                for (int i = 1; i < path_.size() - 1; ++i)
+                if (!agent_->path_.empty())
                 {
-                    path_[i]->setType(CellType::path);
+                    for (int i = 1; i < agent_->path_.size() - 1; ++i)
+                    {
+                    agent_->path_[i]->setType(CellType::path);
+                    }
                 }
             }
             snapshot_clock_.restart();
         }
     }
 
-
     ImGui::SFML::Update(window_, imgui_clock_.restart());
-
-    ImGui::SetNextWindowSize(ImVec2(400, 200)); // change ImGUI size
+    ImGui::SetNextWindowSize(ImVec2(330, 170)); // change ImGUI size
     ImGui::Begin("Metrics");                    // start ImGUI window, with title "Metrics"
     ImGui::SetWindowFontScale(2.0f);            // scale up font of ImGUI by 2
-    ImGui::Text("Path Found: %s", metrics_.path_found ? "Yes" : "No");
-    ImGui::Text("Path Length: %zu", metrics_.path_size);
-    ImGui::Text("Nodes Expanded: %zu", metrics_.nodes_expanded);
-    ImGui::Text("Search Time: %.2f ms", metrics_.search_time);
+    if (agent_)
+    {
+        ImGui::Text("Path Found: %s", agent_->metrics_.path_found ? "Yes" : "No");
+        ImGui::Text("Path Length: %zu",agent_->metrics_.path_size);
+        ImGui::Text("Nodes Expanded: %zu", agent_->metrics_.nodes_expanded);
+        ImGui::Text("Search Time: %.2f ms", agent_->metrics_.search_time);
+    }
     ImGui::End();
-
 }
 
 void Game::draw()
@@ -221,20 +224,17 @@ void Game::onMouseClick(const sf::Event::MouseButtonPressed &mouseEvent, const s
 
 void Game::runAStar()
 {
-    std::size_t nodesExpanded {};
-    Snapshot snapshot;
-
-
     if (placement_state_ != PlacementState::kPlacingObstacles) return;
 
     auto start = std::chrono::high_resolution_clock::now();
-    path_ = grid_.astar(snapshots_, snapshot, nodesExpanded);
+    agent_.emplace(start_cell_, goal_cell_, grid_, sf::Color::Blue);
+    agent_->runAStar();
     auto end = std::chrono::high_resolution_clock::now();
 
-    metrics_.path_found = !path_.empty();
-    metrics_.path_size = path_.size();
-    metrics_.nodes_expanded = nodesExpanded;
-    metrics_.search_time = std::chrono::duration<double, std::milli>(end - start).count();
+    // Save agent's metrics to display
+    agent_->metrics_.search_time = std::chrono::duration<double, std::milli>(end - start).count();
+    agent_->metrics_.path_found = !agent_->path_.empty();
+    agent_->metrics_.path_size = agent_->path_.size();
 }
 
 sf::Vector2f Game::getGridOffset() const
@@ -255,11 +255,11 @@ void Game::selectCell(int row, int col)
                 break;
             }
 
-            if (grid_.start_cell_)
-                grid_.start_cell_->setType(CellType::open);
+            if (start_cell_)
+                start_cell_->setType(CellType::open);
 
             grid_.cells_[row][col].setType(CellType::start);
-            grid_.start_cell_ = &grid_.cells_[row][col];
+            start_cell_ = &grid_.cells_[row][col];
             placement_state_ = PlacementState::kNeedsGoal;
 
             break;
@@ -271,11 +271,11 @@ void Game::selectCell(int row, int col)
                 break;
             }
 
-            if (grid_.goal_cell_)
-                grid_.goal_cell_->setType(CellType::open);
+            if (goal_cell_)
+                goal_cell_->setType(CellType::open);
 
             grid_.cells_[row][col].setType(CellType::goal);
-            grid_.goal_cell_ = &grid_.cells_[row][col];
+            goal_cell_ = &grid_.cells_[row][col];
             placement_state_ = PlacementState::kPlacingObstacles;
             break;
         }
@@ -298,15 +298,15 @@ void Game::deselectCell(int row, int col)
         case CellType::start:
         {
             grid_.cells_[row][col].setType(CellType::open);
-            grid_.start_cell_ = nullptr;
+            start_cell_ = nullptr;
             placement_state_ = PlacementState::kNeedsStart;
             break;
         }
         case CellType::goal:
         {
             grid_.cells_[row][col].setType(CellType::open);
-            grid_.goal_cell_ = nullptr;
-            placement_state_ = grid_.start_cell_ ? PlacementState::kNeedsGoal : PlacementState::kNeedsStart;
+            goal_cell_ = nullptr;
+            placement_state_ = start_cell_ ? PlacementState::kNeedsGoal : PlacementState::kNeedsStart;
             break;
         }
         case CellType::obstacle:
@@ -331,16 +331,11 @@ void Game::reset()
         }
     }
 
-    path_.clear();
+    agent_.reset();
 
-    snapshots_.clear();
-    snapshot_index_ = 0;
+    start_cell_ = nullptr;
+    goal_cell_ = nullptr;
 
     placement_state_ = PlacementState::kNeedsStart;
     app_state_ = AppState::kIdle;
-
-    grid_.start_cell_ = nullptr;
-    grid_.goal_cell_ = nullptr;
-
-    metrics_ = Metrics{};
 }
