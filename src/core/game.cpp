@@ -129,43 +129,30 @@ void Game::processEvents()
 
 void Game::update()
 {
-    if (!start_selected_)
-    {
-        current_cell_type_ = CellType::start;
-    }
-    else if (!goal_selected_)
-    {
-        current_cell_type_ = CellType::goal;
-    }
-    else
-    {
-        current_cell_type_ = CellType::obstacle;
-    }
-
-    if (path_generated_)
-    {
-        if (snapshot_clock_.getElapsedTime().asSeconds() > delay_)
-        {
-            if (snapshot_index_ < snapshots_.size() - 1)
-                snapshot_index_++;
-            else
-                animation_finished_ = true;
-            snapshot_clock_.restart();
-        }
-
-        if (!animation_finished_)
-        {
-            snapshots_[snapshot_index_].prepareSnapshot();
-        }
-    }
-
-    if (path_.size() > 0 && animation_finished_)
-    {
-        for (int i = 1; i < path_.size() - 1; ++i)
-        {
-            path_[i]->setType(CellType::path);
-        }
-    }
+    // if (path_generated_ )
+    // {
+    //     if (snapshot_clock_.getElapsedTime().asSeconds() > delay_)
+    //     {
+    //         if (snapshot_index_ < snapshots_.size() - 1)
+    //             snapshot_index_++;
+    //         else
+    //             animation_finished_ = true;
+    //         snapshot_clock_.restart();
+    //     }
+    //
+    //     if (!animation_finished_)
+    //     {
+    //         snapshots_[snapshot_index_].prepareSnapshot();
+    //     }
+    // }
+    //
+    // if (path_.size() > 0 && animation_finished_)
+    // {
+    //     for (int i = 1; i < path_.size() - 1; ++i)
+    //     {
+    //         path_[i]->setType(CellType::path);
+    //     }
+    // }
 
     ImGui::SFML::Update(window_, imgui_clock_.restart());
 
@@ -213,178 +200,53 @@ void Game::onDrag(const sf::Event::MouseMoved &mouseEvent, const sf::Vector2f &w
     }
 }
 
-void Game::onDragSelect(const sf::Event::MouseMoved& mouseEvent, const sf::Vector2f& worldPos)
+void Game::onMouseClick(const sf::Event::MouseButtonPressed &mouseEvent, const sf::Vector2f &worldPos)
 {
-
-    switch (grid_.cells_[row][col].getType())
-    {
-        case CellType::open:
-        case CellType::obstacle:
-        {
-            grid_.cells_[row][col].setType(current_cell_type_);
-            if (!start_selected_)
-            {
-                grid_.start_cell_ = &grid_.cells_[row][col];
-                start_selected_ = true;
-            }
-            else if (!goal_selected_)
-            {
-                grid_.goal_cell_ = &grid_.cells_[row][col];
-                goal_selected_ = true;
-            }
-            break;
-        }
-        case CellType::start:
-        {
-            break;
-        }
-        case CellType::goal:
-        {
-            break;
-        }
-    }
-
-}
-
-void Game::onDragDeselect(const sf::Event::MouseMoved &mouseEvent, const sf::Vector2f& worldPos)
-{
+    std::cout << "placement state: " << (int)placement_state_ << std::endl;
     const int row = worldPos.x / grid_.getCellSize();
     const int col = worldPos.y / grid_.getCellSize();
 
-    // if clicking outside the grid
-    if (row >= grid_.getRows() || col >= grid_.getCols())
+    if (row >= grid_.getRows() || row < 0 || col >= grid_.getCols() || col < 0)
     {
         return;
     }
 
-    switch (grid_.cells_[row][col].getType())
+    switch (input_mode_)
     {
-
-        case CellType::start:
+        case InputMode::kSelecting:
         {
-            grid_.cells_[row][col].setType(CellType::open);
-            grid_.start_cell_ = nullptr;
-            if (start_selected_)
-
-                start_selected_ = false;
+            selectCell(row, col);
             break;
         }
-        case CellType::goal:
+        case InputMode::kDeselecting:
         {
-            grid_.cells_[row][col].setType(CellType::open);
-            grid_.goal_cell_ = nullptr;
-            if (goal_selected_)
-                goal_selected_ = false;
+            deselectCell(row, col);
             break;
-        }
-        case CellType::obstacle:
-        {
-            grid_.cells_[row][col].setType(CellType::open);
-            break;
-        }
-        case CellType::open:
-        {
-            break;
-        }
-    }
-}
-
-void Game::onMouseClick(const sf::Event::MouseButtonPressed &mouseEvent, const sf::Vector2f& worldPos, const bool isSelecting)
-{
-    const int row = worldPos.x / grid_.getCellSize();
-    const int col = worldPos.y / grid_.getCellSize();
-
-    // if clicking outside the grid
-    if (row >= grid_.getRows() || col >= grid_.getCols())
-    {
-        return;
-    }
-
-    // switch case to handle toggling start, goal, and obstacle
-    if (isSelecting)
-    {
-        switch (grid_.cells_[row][col].getType())
-        {
-            case CellType::open:
-            case CellType::obstacle:
-            {
-                grid_.cells_[row][col].setType(current_cell_type_);
-                if (!start_selected_)
-                {
-                    grid_.start_cell_ = &grid_.cells_[row][col];
-                    start_selected_ = true;
-                }
-                else if (!goal_selected_)
-                {
-                    grid_.goal_cell_ = &grid_.cells_[row][col];
-                    goal_selected_ = true;
-                }
-                break;
-            }
-            case CellType::start:
-            {
-                break;
-            }
-            case CellType::goal:
-            {
-                break;
-            }
-        }
-    }
-    else
-    {
-        switch (grid_.cells_[row][col].getType())
-        {
-
-            case CellType::start:
-            {
-                grid_.cells_[row][col].setType(CellType::open);
-                grid_.start_cell_ = nullptr;
-                if (start_selected_)
-
-                    start_selected_ = false;
-                break;
-            }
-            case CellType::goal:
-            {
-                grid_.cells_[row][col].setType(CellType::open);
-                grid_.goal_cell_ = nullptr;
-                if (goal_selected_)
-                    goal_selected_ = false;
-                break;
-            }
-            case CellType::obstacle:
-            {
-                grid_.cells_[row][col].setType(CellType::open);
-                break;
-            }
-            case CellType::open:
-            {
-                break;
-            }
         }
     }
 }
 
 void Game::runAStar()
 {
-    std::size_t nodesExpanded {};
+    // std::size_t nodesExpanded {};
+    //
+    // if (goal_selected_ && start_selected_)
+    // {
+    //     auto start = std::chrono::high_resolution_clock::now();
+    //     path_ = grid_.astar(snapshots_, snapshot_, nodesExpanded);
+    //     auto end = std::chrono::high_resolution_clock::now();
+    //
+    //     metrics_.path_found = !path_.empty();
+    //     metrics_.path_size = path_.size();
+    //     metrics_.nodes_expanded = nodesExpanded;
+    //     metrics_.search_time = std::chrono::duration<double, std::milli>(end - start).count();
+    // }
+    // else
+    // {
+    //     std::cout << "Start cell or Goal cell is not selected\n";
+    // }
 
-    if (goal_selected_ && start_selected_)
-    {
-        auto start = std::chrono::high_resolution_clock::now();
-        path_ = grid_.astar(snapshots_, snapshot_, nodesExpanded);
-        auto end = std::chrono::high_resolution_clock::now();
-
-        metrics_.path_found = !path_.empty();
-        metrics_.path_size = path_.size();
-        metrics_.nodes_expanded = nodesExpanded;
-        metrics_.search_time = std::chrono::duration<double, std::milli>(end - start).count();
-    }
-    else
-    {
-        std::cout << "Start cell or Goal cell is not selected\n";
-    }
+    return;
 }
 
 sf::Vector2f Game::getGridOffset() const
@@ -400,21 +262,40 @@ void Game::selectCell(int row, int col)
     {
         case PlacementState::kNeedsStart:
         {
+            if (grid_.cells_[row][col].getType() == CellType::goal)
+            {
+                break;
+            }
+
+            if (grid_.start_cell_)
+                grid_.start_cell_->setType(CellType::open);
+
             grid_.cells_[row][col].setType(CellType::start);
             grid_.start_cell_ = &grid_.cells_[row][col];
             placement_state_ = PlacementState::kNeedsGoal;
+
             break;
         }
         case PlacementState::kNeedsGoal:
         {
+            if (grid_.cells_[row][col].getType() == CellType::start)
+            {
+                break;
+            }
+
+            if (grid_.goal_cell_)
+                grid_.goal_cell_->setType(CellType::open);
+
             grid_.cells_[row][col].setType(CellType::goal);
             grid_.goal_cell_ = &grid_.cells_[row][col];
             placement_state_ = PlacementState::kPlacingObstacles;
             break;
+            break;
         }
         case PlacementState::kPlacingObstacles:
         {
-            if (grid_.cells_[row][col].getType() != CellType::start && grid_.cells_[row][col].getType() != CellType::goal)
+            if (grid_.cells_[row][col].getType() != CellType::start &&
+                grid_.cells_[row][col].getType() != CellType::goal)
             {
                 grid_.cells_[row][col].setType(CellType::obstacle);
             }
@@ -438,7 +319,7 @@ void Game::deselectCell(int row, int col)
         {
             grid_.cells_[row][col].setType(CellType::open);
             grid_.goal_cell_ = nullptr;
-            placement_state_ = PlacementState::kNeedsGoal;
+            placement_state_ = grid_.start_cell_ ? PlacementState::kNeedsGoal : PlacementState::kNeedsStart;
             break;
         }
         case CellType::obstacle:
@@ -451,4 +332,9 @@ void Game::deselectCell(int row, int col)
             break;
         }
     }
+}
+
+void Game::reset()
+{
+    return;
 }
