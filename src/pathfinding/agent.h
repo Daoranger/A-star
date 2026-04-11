@@ -8,6 +8,7 @@
 #ifndef PATHFINDING_AGENT_H
 #define PATHFINDING_AGENT_H
 
+#include <iostream>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
@@ -28,8 +29,8 @@ struct CompareCell
 
     bool operator()(Cell* a, Cell* b) const
     {
-        double fa = f_map.at(a);
-        double fb = f_map.at(b);
+        double fa = f_map.count(a) ? f_map.at(a) : std::numeric_limits<double>::infinity();
+        double fb = f_map.count(b) ? f_map.at(b) : std::numeric_limits<double>::infinity();
         if (fa != fb)
             return fa < fb;
         return a < b;
@@ -44,6 +45,10 @@ public:
     Agent(Cell* start_cell, Cell* goal_cell, const Grid& grid, sf::Color color);
     void runAStar();
 
+    std::vector<Snapshot> snapshots_;
+    int snapshot_index_ = 0;
+    std::vector<Cell*> path_;
+    Metrics metrics_;
 
 private:
 
@@ -70,11 +75,6 @@ private:
     std::unordered_map<Cell*, double> f_;
     std::unordered_map<Cell*, double> h_;
     std::unordered_map<Cell*, Cell*> parent_;
-
-    std::vector<Snapshot> snapshots_;
-    int snapshot_index_ = 0;
-    std::vector<Cell*> path_;
-    Metrics metrics_;
 
 };
 

@@ -53,8 +53,8 @@ void Agent::runAStar()
             }
             // change from goal-to-start order to start-to-goal order
             std::reverse(path.begin(), path.end());
-            metrics_.nodes_expanded = closedSet.size() + 1;
             path_ = path;
+            metrics_.nodes_expanded = closedSet.size() + 1;
             return;
         }
 

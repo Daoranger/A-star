@@ -8,13 +8,12 @@
 #ifndef PATHFINDING_GAME_H
 #define PATHFINDING_GAME_H
 
-#include <vector>
+#include <optional>
 
 #include "SFML/Graphics/RenderWindow.hpp"
 
 #include "../grid/grid.h"
-#include "../pathfinding/snapshot.h"
-#include "metrics.h"
+#include "../pathfinding/agent.h"
 
 enum class InputMode
 {
@@ -57,16 +56,17 @@ private:
     void deselectCell(int row, int col);
     void reset();
 
+    Cell* start_cell_ = nullptr;
+    Cell* goal_cell_ = nullptr;
+
+    std::optional<Agent> agent_;
+
     sf::RenderWindow window_;
     sf::View view_;
     Grid grid_;
-    std::vector<Snapshot> snapshots_;
-    int snapshot_index_ = 0;
     sf::Clock snapshot_clock_;
     float delay_ = 0.0001;
-    std::vector<Cell*> path_;
     sf::Clock imgui_clock_;
-    Metrics metrics_;
 
     PlacementState placement_state_ = PlacementState::kNeedsStart;
     InputMode input_mode_ = InputMode::kSelecting;
