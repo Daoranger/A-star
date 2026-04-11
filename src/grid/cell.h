@@ -54,6 +54,9 @@ public:
     // Return true if current cell and other cell's x and y are equals
     bool operator==(const Cell& other) const;
 
+    // Reset cell
+    void reset();
+
     int x_;
     int y_;
 

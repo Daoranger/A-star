@@ -62,10 +62,9 @@ private:
     Grid grid_;
     CellType current_cell_type_ {CellType::start};
     std::vector<Snapshot> snapshots_;
-    Snapshot snapshot_;
     int snapshot_index_ = 0;
     sf::Clock snapshot_clock_;
-    float delay_ = 0.1;
+    float delay_ = 0.0001;
     std::vector<Cell*> path_;
     sf::Clock imgui_clock_;
     Metrics metrics_;
