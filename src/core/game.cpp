@@ -228,7 +228,7 @@ void Game::runAStar()
     if (placement_state_ != PlacementState::kPlacingObstacles) return;
 
     auto start = std::chrono::high_resolution_clock::now();
-    path_ = grid_.astar(snapshots_, snapshot, nodesExpanded);
+    //path_ = grid_.astar(snapshots_, snapshot, nodesExpanded);
     auto end = std::chrono::high_resolution_clock::now();
 
     metrics_.path_found = !path_.empty();

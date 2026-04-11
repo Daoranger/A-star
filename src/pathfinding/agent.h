@@ -14,12 +14,14 @@
 #include <vector>
 
 #include "../grid/cell.h"
+#include "../grid/grid.h"
 #include "../core/metrics.h"
 #include "snapshot.h"
 
 
-class Grid;
-
+// Return true if cell a have lower f value than cell b.
+// Used by the open set as it acts like a priority queue,
+// where cell is lower f have higher priority
 struct CompareCell
 {
     const std::unordered_map<Cell*, double>& f_map;
@@ -39,17 +41,17 @@ class Agent
 
 public:
 
-    Agent(Cell* start, Cell* goal, const Grid& grid, sf::Color color);
+    Agent(Cell* start_cell, Cell* goal_cell, const Grid& grid, sf::Color color);
     void runAStar();
 
 
 private:
 
-    // Return valid neighbors of current cell
-    std::vector<std::pair<int, int>> getValidNeighbors(const Cell& currCell);
-
     // Return the distance between the current cell to goal cell
     double heuristic(const Cell& currCell, const Cell& goalCell);
+
+    // Return valid neighbors of current cell
+    std::vector<std::pair<int, int>> getValidNeighbors(const Cell& currCell) const;
 
     // Uses to extract nodes in open set for snapshots
     std::vector<Cell*> extractNodes(const std::set<Cell*,CompareCell>& set);
@@ -61,8 +63,8 @@ private:
     const Grid& grid_;
 
     sf::Color color_;
-    Cell* start_;
-    Cell* goal_;
+    Cell* start_cell_;
+    Cell* goal_cell_;
 
     std::unordered_map<Cell*, double> g_;
     std::unordered_map<Cell*, double> f_;
