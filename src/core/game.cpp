@@ -147,7 +147,7 @@ void Game::update()
     }
 
     ImGui::SFML::Update(window_, imgui_clock_.restart());
-    ImGui::SetNextWindowSize(ImVec2(400, 200)); // change ImGUI size
+    ImGui::SetNextWindowSize(ImVec2(330, 170)); // change ImGUI size
     ImGui::Begin("Metrics");                    // start ImGUI window, with title "Metrics"
     ImGui::SetWindowFontScale(2.0f);            // scale up font of ImGUI by 2
     if (agent_)
