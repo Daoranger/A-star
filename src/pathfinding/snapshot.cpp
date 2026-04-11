@@ -2,18 +2,14 @@
 // Created by hoang on 3/30/2026.
 //
 
-#include "Snapshot.h"
+#include "snapshot.h"
 
-Snapshot::Snapshot()
-    : m_openVector{}
-    , m_closedVector{}
-{
-}
+Snapshot::Snapshot() {}
 
 void Snapshot::prepareSnapshot()
 {
 
-    for (auto& cell : m_openVector)
+    for (auto& cell : frontier_)
     {
         if ((cell->getType() == CellType::start) || (cell->getType() == CellType::goal))
         {
@@ -22,7 +18,7 @@ void Snapshot::prepareSnapshot()
         cell->setType(CellType::frontier);
     }
 
-    for (auto& cell : m_closedVector)
+    for (auto& cell : explored_)
     {
         if ((cell->getType() == CellType::start) || (cell->getType() == CellType::goal))
         {
@@ -30,10 +26,4 @@ void Snapshot::prepareSnapshot()
         }
         cell->setType(CellType::explored);
     }
-}
-
-void Snapshot::clearSnapshot()
-{
-    m_openVector.clear();
-    m_closedVector.clear();
 }

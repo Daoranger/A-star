@@ -16,7 +16,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "../pathfinding/Snapshot.h"
+#include "../pathfinding/snapshot.h"
 #include "cell.h"
 
 // Return true if cell a have lower f value than cell b.

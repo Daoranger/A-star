@@ -3,7 +3,7 @@
 //
 
 #include "grid.h"
-#include "../pathfinding/Snapshot.h"
+#include "../pathfinding/snapshot.h"
 #include <iostream>
 
 Grid::Grid(std::size_t rows, std::size_t cols, float cellSize)
@@ -71,8 +71,8 @@ std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snaps
 
     // add start cell to openList
     openSet.insert(start_cell_);
-    snapshot.m_openVector = extractNodes(openSet);
-    snapshot.m_closedVector = extractNodes(closedSet);
+    snapshot.frontier_ = extractNodes(openSet);
+    snapshot.explored_ = extractNodes(closedSet);
     snapshots.push_back(snapshot);
 
     // processing current cell in open set
@@ -103,8 +103,8 @@ std::vector<Cell*> Grid::astar(std::vector<Snapshot>& snapshots, Snapshot& snaps
         // add current cell to closedList
         closedSet.insert(currCell);
 
-        snapshot.m_openVector = extractNodes(openSet);
-        snapshot.m_closedVector = extractNodes(closedSet);
+        snapshot.frontier_ = extractNodes(openSet);
+        snapshot.explored_ = extractNodes(closedSet);
         snapshots.push_back(snapshot);
 
         // for each neighbor of current cell

@@ -1,7 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/Event.hpp>
 #include "../grid/cell.h"
-#include "Game.h"
+#include "game.h"
 
 int main()
 {

@@ -29,11 +29,11 @@ FetchContent_MakeAvailable(imgui-sfml)
 
 add_executable(main
         src/core/main.cpp
-        src/core/Game.cpp
+        src/core/game.cpp
         src/grid/cell.cpp
         src/grid/grid.cpp
         src/pathfinding/Agent.cpp
-        src/pathfinding/Snapshot.cpp
+        src/pathfinding/snapshot.cpp
 )
 target_compile_features(main PRIVATE cxx_std_17)
 target_link_libraries(main PRIVATE SFML::Graphics ImGui-SFML::ImGui-SFML)
