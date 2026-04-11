@@ -49,13 +49,10 @@ void Game::processEvents()
             sf::Vector2i pixelPos = mouseButtonPressedEvent->position;
             sf::Vector2f worldPos = window_.mapPixelToCoords(pixelPos, view_);
 
-            sf::Vector2f gridOffset(
-                window_.getSize().x / 2.f - grid_.getCellSize() * grid_.getCols() / 2.f,
-                window_.getSize().y / 2.f - grid_.getCellSize() * grid_.getRows() / 2.f
-            );
+            sf::Vector2f gridOffset = getGridOffset();
             sf::Vector2f localPos = worldPos - gridOffset;
 
-            onMouseClick(*mouseButtonPressedEvent, localPos, is_selecting_);
+            onMouseClick(*mouseButtonPressedEvent, localPos);
             is_dragging_ = true;
 
         }
@@ -65,25 +62,23 @@ void Game::processEvents()
         {
             if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num1)
             {
-                if (!is_selecting_)
-                    is_selecting_ = true;
+                input_mode_ = InputMode::kSelecting;
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num2)
             {
-                if (is_selecting_)
-                    is_selecting_ = false;
+                input_mode_ = InputMode::kDeselecting;
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num3)
             {
-                if (!path_generated_)
+                if (app_state_ != AppState::kDone)
                 {
                     runAStar();
-                    path_generated_ = true;
+                    app_state_ = AppState::kDone;
                 }
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num4)
             {
-                path_generated_ = false;
+                // TODO: NEED TO IMPLEMENT
             }
         }
 
@@ -105,13 +100,13 @@ void Game::processEvents()
             );
             sf::Vector2f localPos = worldPos - gridOffset;
 
-            if (is_dragging_ && is_selecting_)
+            if (is_dragging_ && input_mode_ == InputMode::kSelecting)
             {
-                onDragSelect(*mouseMovedEvent, localPos);
+                onDrag(*mouseMovedEvent, localPos);
             }
-            else if (is_dragging_ && !is_selecting_)
+            else if (is_dragging_ && input_mode_ == InputMode::kDeselecting)
             {
-                onDragDeselect(*mouseMovedEvent, localPos);
+                onDrag(*mouseMovedEvent, localPos);
             }
         }
 
@@ -193,15 +188,33 @@ void Game::draw()
     window_.display();
 }
 
-void Game::onDragSelect(const sf::Event::MouseMoved& mouseEvent, const sf::Vector2f& worldPos)
+void Game::onDrag(const sf::Event::MouseMoved &mouseEvent, const sf::Vector2f &worldPos)
 {
     const int row = worldPos.x / grid_.getCellSize();
     const int col = worldPos.y / grid_.getCellSize();
 
-    if (row >= grid_.getRows() || col >= grid_.getCols())
+    if (row >= grid_.getRows() || row < 0 || col >= grid_.getCols() || col < 0)
     {
         return;
     }
+
+    switch (input_mode_)
+    {
+        case InputMode::kSelecting:
+        {
+            selectCell(row, col);
+            break;
+        }
+        case InputMode::kDeselecting:
+        {
+            deselectCell(row, col);
+            break;
+        }
+    }
+}
+
+void Game::onDragSelect(const sf::Event::MouseMoved& mouseEvent, const sf::Vector2f& worldPos)
+{
 
     switch (grid_.cells_[row][col].getType())
     {
@@ -376,4 +389,66 @@ void Game::runAStar()
 
 sf::Vector2f Game::getGridOffset() const
 {
+    float x = window_.getSize().x / 2.f - grid_.getCellSize() * grid_.getCols() / 2.f;
+    float y = window_.getSize().y / 2.f - grid_.getCellSize() * grid_.getRows() / 2.f;
+    return sf::Vector2f(x, y);
+}
+
+void Game::selectCell(int row, int col)
+{
+    switch (placement_state_)
+    {
+        case PlacementState::kNeedsStart:
+        {
+            grid_.cells_[row][col].setType(CellType::start);
+            grid_.start_cell_ = &grid_.cells_[row][col];
+            placement_state_ = PlacementState::kNeedsGoal;
+            break;
+        }
+        case PlacementState::kNeedsGoal:
+        {
+            grid_.cells_[row][col].setType(CellType::goal);
+            grid_.goal_cell_ = &grid_.cells_[row][col];
+            placement_state_ = PlacementState::kPlacingObstacles;
+            break;
+        }
+        case PlacementState::kPlacingObstacles:
+        {
+            if (grid_.cells_[row][col].getType() != CellType::start && grid_.cells_[row][col].getType() != CellType::goal)
+            {
+                grid_.cells_[row][col].setType(CellType::obstacle);
+            }
+            break;
+        }
+    }
+}
+
+void Game::deselectCell(int row, int col)
+{
+    switch (grid_.cells_[row][col].getType())
+    {
+        case CellType::start:
+        {
+            grid_.cells_[row][col].setType(CellType::open);
+            grid_.start_cell_ = nullptr;
+            placement_state_ = PlacementState::kNeedsStart;
+            break;
+        }
+        case CellType::goal:
+        {
+            grid_.cells_[row][col].setType(CellType::open);
+            grid_.goal_cell_ = nullptr;
+            placement_state_ = PlacementState::kNeedsGoal;
+            break;
+        }
+        case CellType::obstacle:
+        {
+            grid_.cells_[row][col].setType(CellType::open);
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
 }
