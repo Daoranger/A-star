@@ -28,11 +28,12 @@ set(IMGUI_SFML_IMGUI_STATIC ON)
 FetchContent_MakeAvailable(imgui-sfml)
 
 add_executable(main
-        src/main.cpp
-        src/Cell.cpp
-        src/Game.cpp
-        src/Grid.cpp
-        src/Snapshot.cpp
+        src/core/main.cpp
+        src/core/game.cpp
+        src/grid/cell.cpp
+        src/grid/grid.cpp
+        src/pathfinding/snapshot.cpp
+        src/pathfinding/agent.cpp
 )
 target_compile_features(main PRIVATE cxx_std_17)
 target_link_libraries(main PRIVATE SFML::Graphics ImGui-SFML::ImGui-SFML)
