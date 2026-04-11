@@ -32,8 +32,8 @@ add_executable(main
         src/core/game.cpp
         src/grid/cell.cpp
         src/grid/grid.cpp
-        src/pathfinding/Agent.cpp
         src/pathfinding/snapshot.cpp
+        src/pathfinding/agent.cpp
 )
 target_compile_features(main PRIVATE cxx_std_17)
 target_link_libraries(main PRIVATE SFML::Graphics ImGui-SFML::ImGui-SFML)
