@@ -1,16 +1,79 @@
+// Copyright 2026, Hoang Nguyen
 //
-// Created by hoang on 4/2/2026.
+// agent.h
 //
-#include "../grid/Cell.h"
+// Defines the Agent class, which represent an AI agent with a starting position.
+// It task is to find the path to the goal position
 
 #ifndef PATHFINDING_AGENT_H
 #define PATHFINDING_AGENT_H
 
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
+#include "../grid/cell.h"
+#include "../core/metrics.h"
+#include "snapshot.h"
+
+
+class Grid;
+
+struct CompareCell
+{
+    const std::unordered_map<Cell*, double>& f_map;
+
+    bool operator()(Cell* a, Cell* b) const
+    {
+        double fa = f_map.at(a);
+        double fb = f_map.at(b);
+        if (fa != fb)
+            return fa < fb;
+        return a < b;
+    }
+};
 
 class Agent
 {
-    Cell* m_agentStartNode;
-    Cell* m_agentGoalNode;
+
+public:
+
+    Agent(Cell* start, Cell* goal, const Grid& grid, sf::Color color);
+    void runAStar();
+
+
+private:
+
+    // Return valid neighbors of current cell
+    std::vector<std::pair<int, int>> getValidNeighbors(const Cell& currCell);
+
+    // Return the distance between the current cell to goal cell
+    double heuristic(const Cell& currCell, const Cell& goalCell);
+
+    // Uses to extract nodes in open set for snapshots
+    std::vector<Cell*> extractNodes(const std::set<Cell*,CompareCell>& set);
+
+    // Uses to extract nodes in closed set for snapshots
+    std::vector<Cell*> extractNodes(const std::unordered_set<Cell*>& unordered_set);
+
+
+    const Grid& grid_;
+
+    sf::Color color_;
+    Cell* start_;
+    Cell* goal_;
+
+    std::unordered_map<Cell*, double> g_;
+    std::unordered_map<Cell*, double> f_;
+    std::unordered_map<Cell*, double> h_;
+    std::unordered_map<Cell*, Cell*> parent_;
+
+    std::vector<Snapshot> snapshots_;
+    int snapshot_index_ = 0;
+    std::vector<Cell*> path_;
+    Metrics metrics_;
+
 };
 
 

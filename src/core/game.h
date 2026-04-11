@@ -60,7 +60,6 @@ private:
     sf::RenderWindow window_;
     sf::View view_;
     Grid grid_;
-    CellType current_cell_type_ {CellType::start};
     std::vector<Snapshot> snapshots_;
     int snapshot_index_ = 0;
     sf::Clock snapshot_clock_;
