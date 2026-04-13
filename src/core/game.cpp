@@ -9,7 +9,7 @@
 Game::Game()
     : window_(sf::VideoMode( { 1200, 700 } ), "A* Pathfinding")
     , view_(sf::FloatRect(sf::Vector2f(0, 0), sf::Vector2f(window_.getPosition().x, window_.getPosition().y)))
-    , grid_(5, 5, 50)
+    , grid_(50, 50, 50)
 {
     window_.setView(view_);
     ImGui::SFML::Init(window_);
@@ -90,6 +90,13 @@ void Game::processEvents()
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num4)
             {
                 reset();
+            }
+            else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Tab)
+            {
+                if (game_mode_ == GameMode::kSingleAgent)
+                    game_mode_ = GameMode::kMultiAgent;
+                else
+                    game_mode_ = GameMode::kSingleAgent;
             }
         }
 

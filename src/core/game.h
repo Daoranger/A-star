@@ -79,7 +79,7 @@ private:
     PlacementState placement_state_ = PlacementState::kNeedsStart;
     InputMode input_mode_ = InputMode::kSelecting;
     AppState app_state_ = AppState::kIdle;
-    GameMode game_mode_ = GameMode::kMultiAgent;
+    GameMode game_mode_ = GameMode::kSingleAgent;
     bool is_dragging_ = false;
 
 
