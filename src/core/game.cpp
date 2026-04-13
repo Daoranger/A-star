@@ -126,22 +126,12 @@ void Game::update()
     {
         if (snapshot_clock_.getElapsedTime().asSeconds() > delay_)
         {
-            if (agent_->snapshot_index_ < agent_->snapshots_.size() - 1)
-            {
-                agent_->snapshot_index_++;
-                agent_->snapshots_[agent_->snapshot_index_].prepareSnapshot();
-            }
-            else
+            if (agent_->snapshot_index_ >= agent_->snapshots_.size() - 1)
             {
                 app_state_ = AppState::kDone;
-                if (!agent_->path_.empty())
-                {
-                    for (int i = 1; i < agent_->path_.size() - 1; ++i)
-                    {
-                    agent_->path_[i]->setType(CellType::path);
-                    }
-                }
             }
+
+            agent_->snapshot_index_++;
             snapshot_clock_.restart();
         }
     }
@@ -164,9 +154,51 @@ void Game::draw()
 {
     window_.clear(sf::Color::White);
     grid_.draw(window_);
+    drawAgentSnapshots();
     ImGui::SFML::Render(window_);
     window_.display();
 }
+
+void Game::drawAgentSnapshots()
+{
+    if (agent_ && app_state_ == AppState::kAnimating)
+    {
+        auto& snapshot = agent_->snapshots_[agent_->snapshot_index_];
+
+        sf::Vector2f offset = getGridOffset();
+        sf::RectangleShape overlay(sf::Vector2f(grid_.getCellSize(), grid_.getCellSize()));
+
+        // draw frontier
+        overlay.setFillColor(sf::Color(agent_->getColor().r, agent_->getColor().g, agent_->getColor().b, 128));
+        for (Cell* cell : snapshot.frontier_)
+        {
+            overlay.setPosition(sf::Vector2f(cell->x_ * grid_.getCellSize(), cell->y_ * grid_.getCellSize()) + offset);
+            window_.draw(overlay);
+        }
+
+        // draw explored
+        overlay.setFillColor(sf::Color(agent_->getColor().r, agent_->getColor().g, agent_->getColor().b, 64));
+        for (Cell* cell : snapshot.explored_)
+        {
+            overlay.setPosition(sf::Vector2f(cell->x_ * grid_.getCellSize(), cell->y_ * grid_.getCellSize()) + offset);
+            window_.draw(overlay);
+        }
+    }
+    else if (agent_ && app_state_ == AppState::kDone)
+    {
+        sf::Vector2f offset = getGridOffset();
+        sf::RectangleShape overlay(sf::Vector2f(grid_.getCellSize(), grid_.getCellSize()));
+
+        // draw path
+        overlay.setFillColor(sf::Color(agent_->getColor().r, agent_->getColor().g, agent_->getColor().b, 150));
+        for (Cell* cell : agent_->path_)
+        {
+            overlay.setPosition(sf::Vector2f(cell->x_ * grid_.getCellSize(), cell->y_ * grid_.getCellSize()) + offset);
+            window_.draw(overlay);
+        }
+    }
+}
+
 
 void Game::onDrag(const sf::Event::MouseMoved &mouseEvent, const sf::Vector2f &worldPos)
 {

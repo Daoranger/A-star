@@ -32,24 +32,6 @@ void Cell::draw(sf::RenderWindow& window)
         case CellType::open:
             setColor(sf::Color::White);
             break;
-        case CellType::path:
-        {
-            sf::Color orange(255, 165, 0);
-            setColor(orange);
-            break;
-        }
-        case CellType::frontier:
-        {
-            sf::Color cyan(0, 200, 255);
-            setColor(cyan);
-            break;
-        }
-        case CellType::explored:
-        {
-            sf::Color purple(147, 112, 219);
-            setColor(purple);
-            break;
-        }
     }
 
     square_.setFillColor(cell_color_);

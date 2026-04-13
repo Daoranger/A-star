@@ -102,6 +102,11 @@ void Agent::runAStar()
     metrics_.nodes_expanded = closedSet.size();
 }
 
+sf::Color Agent::getColor() const
+{
+    return color_;
+}
+
 double Agent::heuristic(const Cell &currCell, const Cell &goalCell)
 {
     // Manhattan distance

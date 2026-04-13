@@ -35,6 +35,12 @@ enum class AppState
     kDone
 };
 
+enum class GameMode
+{
+    kSingleAgent,
+    kMultiAgent
+};
+
 class Game
 {
 
@@ -45,6 +51,7 @@ public:
     void processEvents();
     void update();
     void draw();
+    void drawAgentSnapshots();
     void onDrag(const sf::Event::MouseMoved& mouseEvent, const sf::Vector2f& worldPos);
     void onMouseClick(const sf::Event::MouseButtonPressed& mouseEvent, const sf::Vector2f& worldPos);
     void runAStar();
@@ -59,6 +66,7 @@ private:
     Cell* start_cell_ = nullptr;
     Cell* goal_cell_ = nullptr;
 
+    std::vector<Agent> agents_;
     std::optional<Agent> agent_;
 
     sf::RenderWindow window_;

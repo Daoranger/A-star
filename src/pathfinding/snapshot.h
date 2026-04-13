@@ -20,8 +20,6 @@ class Snapshot
 public:
     Snapshot();
 
-    //
-    void prepareSnapshot();
     std::vector<Cell*> frontier_;
     std::vector<Cell*> explored_;
 };

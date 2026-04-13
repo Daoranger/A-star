@@ -44,6 +44,7 @@ public:
 
     Agent(Cell* start_cell, Cell* goal_cell, const Grid& grid, sf::Color color);
     void runAStar();
+    sf::Color getColor() const;
 
     std::vector<Snapshot> snapshots_;
     int snapshot_index_ = 0;
