@@ -66,7 +66,7 @@ private:
     Cell* start_cell_ = nullptr;
     Cell* goal_cell_ = nullptr;
 
-    std::vector<Agent> agents_;
+    std::vector<Agent*> agents_;
     std::optional<Agent> agent_;
 
     sf::RenderWindow window_;
@@ -79,7 +79,10 @@ private:
     PlacementState placement_state_ = PlacementState::kNeedsStart;
     InputMode input_mode_ = InputMode::kSelecting;
     AppState app_state_ = AppState::kIdle;
+    GameMode game_mode_ = GameMode::kMultiAgent;
     bool is_dragging_ = false;
+
+    bool intialized = false;
 
 };
 

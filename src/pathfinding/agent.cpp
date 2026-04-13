@@ -107,6 +107,16 @@ sf::Color Agent::getColor() const
     return color_;
 }
 
+Cell * Agent::getStartCell() const
+{
+    return start_cell_;
+}
+
+Cell * Agent::getGoalCell() const
+{
+    return goal_cell_;
+}
+
 double Agent::heuristic(const Cell &currCell, const Cell &goalCell)
 {
     // Manhattan distance
