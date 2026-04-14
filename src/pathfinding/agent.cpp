@@ -92,7 +92,7 @@ void Agent::runAStar()
                 parent_[neighborCell] = currCell;
                 g_[neighborCell] = tentative_g;
                 h_[neighborCell] = heuristic(*neighborCell, *goal_cell_);
-                f_[neighborCell] = g_.at(neighborCell) + 20 * h_.at(neighborCell);
+                f_[neighborCell] = g_.at(neighborCell) + h_.at(neighborCell);
                 openSet.insert(neighborCell);
             }
         }

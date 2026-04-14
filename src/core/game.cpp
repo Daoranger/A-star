@@ -194,26 +194,24 @@ void Game::drawAgent(Agent& agent)
     sf::Vector2f offset = getGridOffset();
     sf::RectangleShape overlay(sf::Vector2f(grid_.getCellSize(), grid_.getCellSize()));
 
+    const Cell* startCell = agent.getStartCell();
+    const Cell* goalCell = agent.getGoalCell();
+
+    if (!startCell || !goalCell) return;
+
+    color.a = 255;
+    overlay.setFillColor(color);
+    overlay.setPosition(sf::Vector2f(startCell->x_ * grid_.getCellSize(), startCell->y_ * grid_.getCellSize()) + offset);
+    window_.draw(overlay);
+
+    color.a = 128;
+    overlay.setFillColor(color);
+    overlay.setPosition(sf::Vector2f(goalCell->x_ * grid_.getCellSize(), goalCell->y_ * grid_.getCellSize()) + offset);
+    window_.draw(overlay);
+
     switch (app_state_)
     {
-        case AppState::kIdle:
-        {
-            const Cell* startCell = agent.getStartCell();
-            const Cell* goalCell = agent.getGoalCell();
 
-            if (!startCell || !goalCell) return;
-
-            color.a = 255;
-            overlay.setFillColor(color);
-            overlay.setPosition(sf::Vector2f(startCell->x_ * grid_.getCellSize(), startCell->y_ * grid_.getCellSize()) + offset);
-            window_.draw(overlay);
-
-            color.a = 128;
-            overlay.setFillColor(color);
-            overlay.setPosition(sf::Vector2f(goalCell->x_ * grid_.getCellSize(), goalCell->y_ * grid_.getCellSize()) + offset);
-            window_.draw(overlay);
-            break;
-        }
         case AppState::kAnimating:
         {
             if (agent.snapshots_.empty()) return;
@@ -348,6 +346,15 @@ sf::Vector2f Game::getGridOffset() const
 
 void Game::selectCell(int row, int col)
 {
+    if (game_mode_ != GameMode::kSingleAgent)
+    {
+        if (grid_.cells_[row][col].getType() == CellType::open)
+        {
+            grid_.cells_[row][col].setType(CellType::obstacle);
+        }
+        return;
+    }
+
     switch (placement_state_)
     {
         case PlacementState::kNeedsStart:

@@ -75,7 +75,7 @@ private:
     sf::View view_;
     Grid grid_;
     sf::Clock snapshot_clock_;
-    float delay_ = 0.0001;
+    float delay_ = 0.01;
     sf::Clock imgui_clock_;
 
     PlacementState placement_state_ = PlacementState::kNeedsStart;
