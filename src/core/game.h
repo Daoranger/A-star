@@ -44,11 +44,12 @@ enum class GameMode
 
 enum class ParallelStrategy
 {
-    Sequential,
-    OpenMP,
-    Async,
-    PerAgentThread,
-    ThreadPool
+    kSequential,
+    kOpenMP,
+    kAsync,
+    kPerAgentThread,
+    kThreadPool,
+    kStdExecution
 };
 
 class Game
@@ -93,6 +94,7 @@ private:
     InputMode input_mode_ = InputMode::kSelecting;
     AppState app_state_ = AppState::kIdle;
     GameMode game_mode_ = GameMode::kSingleAgent;
+    ParallelStrategy parallel_strategy_ = ParallelStrategy::kOpenMP;
     bool is_dragging_ = false;
 
 

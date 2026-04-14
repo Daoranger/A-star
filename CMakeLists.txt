@@ -3,6 +3,8 @@ project(Pathfinding LANGUAGES CXX)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+find_package(OpenMP REQUIRED)
+
 include(FetchContent)
 FetchContent_Declare(SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
@@ -36,6 +38,14 @@ add_executable(main
         src/pathfinding/agent.cpp
 )
 target_compile_features(main PRIVATE cxx_std_17)
-target_link_libraries(main PRIVATE SFML::Graphics ImGui-SFML::ImGui-SFML)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(main PRIVATE
+            SFML::Graphics
+            ImGui-SFML::ImGui-SFML
+            OpenMP::OpenMP_CXX
+    )
+    set_target_properties(main PROPERTIES LINK_FLAGS "${OpenMP_CXX_FLAGS}")
+endif()
+
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT main)

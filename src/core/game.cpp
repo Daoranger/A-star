@@ -2,9 +2,13 @@
 
 #include <iostream>
 #include <chrono>
+#include <future>
+#include <thread>
 
 #include "imgui.h"
 #include "imgui-SFML.h"
+
+#include <omp.h>
 
 Game::Game()
     : window_(sf::VideoMode( { 1200, 700 } ), "A* Pathfinding")
@@ -164,7 +168,7 @@ void Game::update()
     //ImGui::Text("Path Found: %s", agent->metrics_.path_found ? "Yes" : "No");
     //ImGui::Text("Path Length: %zu", agent->metrics_.path_size);
     //ImGui::Text("Nodes Expanded: %zu", agent->metrics_.nodes_expanded);
-    //ImGui::Separator();
+    ImGui::Separator();
     ImGui::End();
 }
 
@@ -310,20 +314,63 @@ void Game::runAStar()
         agents_.clear();
         agents_.push_back(std::make_unique<Agent>(start_cell_, goal_cell_, grid_, sf::Color::Blue));
     }
-    
+
     auto start = std::chrono::high_resolution_clock::now();
-    for (auto& agent : agents_)
+    switch (parallel_strategy_)
     {
-        agent->runAStar();
+        case ParallelStrategy::kSequential:
+        {
+            for (auto& agent : agents_)
+            {
+                agent->runAStar();
+            }
+            break;
+        }
+        case ParallelStrategy::kAsync:
+        {
+            std::vector<std::future<void>> futures;
+            futures.reserve(agents_.size());
+
+            for (auto& agent : agents_) {
+                futures.push_back(std::async(std::launch::async, &Agent::runAStar, agent.get()));
+            }
+
+            for (auto& f : futures) {
+                f.get();
+            }
+            break;
+        }
+        case ParallelStrategy::kOpenMP:
+        {
+            //std::cout << "OpenMP Threads: " << omp_get_max_threads() << std::endl;
+            #pragma omp parallel for
+            for (int i = 0; i < static_cast<int>(agents_.size()); ++i) {
+                agents_[i]->runAStar();
+            }
+            break;
+        }
+        case ParallelStrategy::kPerAgentThread:
+        {
+            std::vector<std::thread> threads;
+            for (auto& agent : agents_) {
+                // create a thread for EVERY agent
+                threads.emplace_back(&Agent::runAStar, agent.get());
+            }
+            for (auto& t : threads) {
+                t.join(); // Wait for all threads to finish
+            }
+            break;
+        }
     }
     auto end = std::chrono::high_resolution_clock::now();
+
 
     multiAgentsSeqMetrics.search_time = std::chrono::duration<double, std::milli>(end - start).count();
 }
 
 void Game::initAgents()
 {
-    for (int i = 0; i < 100000; i++)
+    for (int i = 0; i < 2500; i++)
     {
         agents_.push_back(std::make_unique<Agent>(&grid_.cells_[0][0], &grid_.cells_[49][49], grid_, sf::Color::Red));
         agents_.push_back(std::make_unique<Agent>(&grid_.cells_[0][49], &grid_.cells_[49][0], grid_, sf::Color::Blue));
