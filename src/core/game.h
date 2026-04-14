@@ -42,6 +42,15 @@ enum class GameMode
     kMultiAgentThreaded
 };
 
+enum class ParallelStrategy
+{
+    Sequential,
+    OpenMP,
+    Async,
+    PerAgentThread,
+    ThreadPool
+};
+
 class Game
 {
 

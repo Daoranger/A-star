@@ -304,7 +304,6 @@ void Game::onMouseClick(const sf::Event::MouseButtonPressed &mouseEvent, const s
 
 void Game::runAStar()
 {
-
     if (game_mode_ == GameMode::kSingleAgent)
     {
         if (placement_state_ != PlacementState::kPlacingObstacles) return;
@@ -324,8 +323,13 @@ void Game::runAStar()
 
 void Game::initAgents()
 {
-    agents_.push_back(std::make_unique<Agent>(&grid_.cells_[0][0], &grid_.cells_[49][49], grid_, sf::Color::Red));
-    agents_.push_back(std::make_unique<Agent>(&grid_.cells_[0][49], &grid_.cells_[49][0], grid_, sf::Color::Blue));
+    for (int i = 0; i < 100000; i++)
+    {
+        agents_.push_back(std::make_unique<Agent>(&grid_.cells_[0][0], &grid_.cells_[49][49], grid_, sf::Color::Red));
+        agents_.push_back(std::make_unique<Agent>(&grid_.cells_[0][49], &grid_.cells_[49][0], grid_, sf::Color::Blue));
+        agents_.push_back(std::make_unique<Agent>(&grid_.cells_[49][0], &grid_.cells_[0][49], grid_, sf::Color::Green));
+        agents_.push_back(std::make_unique<Agent>(&grid_.cells_[49][49], &grid_.cells_[0][0], grid_, sf::Color::Magenta));
+    }
 }
 
 sf::Vector2f Game::getGridOffset() const
