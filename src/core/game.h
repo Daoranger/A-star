@@ -38,7 +38,8 @@ enum class AppState
 enum class GameMode
 {
     kSingleAgent,
-    kMultiAgent
+    kMultiAgentSequential,
+    kMultiAgentThreaded
 };
 
 class Game
@@ -51,10 +52,12 @@ public:
     void processEvents();
     void update();
     void draw();
-    void drawAgentSnapshots();
+    void drawAgents();
+    void drawAgent(Agent& agent);
     void onDrag(const sf::Event::MouseMoved& mouseEvent, const sf::Vector2f& worldPos);
     void onMouseClick(const sf::Event::MouseButtonPressed& mouseEvent, const sf::Vector2f& worldPos);
     void runAStar();
+    void initAgents();
 
 private:
 
@@ -67,7 +70,6 @@ private:
     Cell* goal_cell_ = nullptr;
 
     std::vector<std::unique_ptr<Agent>> agents_;
-    std::optional<Agent> agent_;
 
     sf::RenderWindow window_;
     sf::View view_;

@@ -13,17 +13,6 @@ Game::Game()
 {
     window_.setView(view_);
     ImGui::SFML::Init(window_);
-
-    Agent agent1(&grid_.cells_[0][0], &grid_.cells_[0][3], grid_, sf::Color::Red);
-    //Agent agent2(&grid_.cells_[0][4], &grid_.cells_[49][0], grid_, sf::Color::Blue);
-
-    agents_.push_back(std::make_unique<Agent>(
-        &grid_.cells_[0][0],
-        &grid_.cells_[0][3],
-        grid_,
-        sf::Color::Red
-    ));
-    //agents_.push_back(&agent2);
 }
 
 void Game::run()
@@ -81,10 +70,13 @@ void Game::processEvents()
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num3)
             {
-                if (app_state_ == AppState::kIdle && placement_state_ == PlacementState::kPlacingObstacles)
+                if (app_state_ == AppState::kIdle)
                 {
-                    runAStar();
-                    app_state_ = AppState::kAnimating;
+                    if ((game_mode_ == GameMode::kSingleAgent && placement_state_ == PlacementState::kPlacingObstacles) || game_mode_ == GameMode::kMultiAgentSequential)
+                    {
+                        runAStar();
+                        app_state_ = AppState::kAnimating;
+                    }
                 }
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num4)
@@ -94,9 +86,14 @@ void Game::processEvents()
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Tab)
             {
                 if (game_mode_ == GameMode::kSingleAgent)
-                    game_mode_ = GameMode::kMultiAgent;
+                {
+                    game_mode_ = GameMode::kMultiAgentSequential;
+                }
                 else
+                {
                     game_mode_ = GameMode::kSingleAgent;
+                }
+                reset();
             }
         }
 
@@ -140,30 +137,36 @@ void Game::processEvents()
 
 void Game::update()
 {
-    if (app_state_ == AppState::kAnimating && agent_)
+    if (app_state_ == AppState::kAnimating && !agents_.empty())
     {
         if (snapshot_clock_.getElapsedTime().asSeconds() > delay_)
         {
-            if (agent_->snapshot_index_ >= agent_->snapshots_.size() - 1)
+            bool all_done = true;
+            for (auto& agent : agents_)
             {
-                app_state_ = AppState::kDone;
+                if (agent->snapshot_index_ < agent->snapshots_.size() - 1)
+                {
+                    agent->snapshot_index_++;
+                    all_done = false;
+                }
             }
-
-            agent_->snapshot_index_++;
+            if (all_done)
+                app_state_ = AppState::kDone;
             snapshot_clock_.restart();
         }
     }
 
     ImGui::SFML::Update(window_, imgui_clock_.restart());
-    ImGui::SetNextWindowSize(ImVec2(330, 170)); // change ImGUI size
-    ImGui::Begin("Metrics");                    // start ImGUI window, with title "Metrics"
-    ImGui::SetWindowFontScale(2.0f);            // scale up font of ImGUI by 2
-    if (agent_)
+    ImGui::SetNextWindowSize(ImVec2(330, 170));
+    ImGui::Begin("Metrics");
+    ImGui::SetWindowFontScale(2.0f);
+    for (auto& agent : agents_)
     {
-        ImGui::Text("Path Found: %s", agent_->metrics_.path_found ? "Yes" : "No");
-        ImGui::Text("Path Length: %zu",agent_->metrics_.path_size);
-        ImGui::Text("Nodes Expanded: %zu", agent_->metrics_.nodes_expanded);
-        ImGui::Text("Search Time: %.2f ms", agent_->metrics_.search_time);
+        ImGui::Text("Path Found: %s", agent->metrics_.path_found ? "Yes" : "No");
+        ImGui::Text("Path Length: %zu", agent->metrics_.path_size);
+        ImGui::Text("Nodes Expanded: %zu", agent->metrics_.nodes_expanded);
+        ImGui::Text("Search Time: %.2f ms", agent->metrics_.search_time);
+        ImGui::Separator();
     }
     ImGui::End();
 }
@@ -172,74 +175,77 @@ void Game::draw()
 {
     window_.clear(sf::Color::White);
     grid_.draw(window_);
-    drawAgentSnapshots();
+    drawAgents();
     ImGui::SFML::Render(window_);
     window_.display();
 }
 
-void Game::drawAgentSnapshots()
+void Game::drawAgents()
 {
-    sf::Vector2f offset = getGridOffset();
-    switch (game_mode_)
+    for (auto& agent : agents_)
     {
-        case GameMode::kSingleAgent:
+        drawAgent(*agent);
+    }
+}
+
+void Game::drawAgent(Agent& agent)
+{
+    sf::Color color = agent.getColor();
+    sf::Vector2f offset = getGridOffset();
+    sf::RectangleShape overlay(sf::Vector2f(grid_.getCellSize(), grid_.getCellSize()));
+
+    switch (app_state_)
+    {
+        case AppState::kIdle:
         {
-            if (agent_ && app_state_ == AppState::kAnimating)
-            {
-                auto& snapshot = agent_->snapshots_[agent_->snapshot_index_];
+            const Cell* startCell = agent.getStartCell();
+            const Cell* goalCell = agent.getGoalCell();
 
-                sf::RectangleShape overlay(sf::Vector2f(grid_.getCellSize(), grid_.getCellSize()));
+            if (!startCell || !goalCell) return;
 
-                // draw frontier
-                overlay.setFillColor(sf::Color(agent_->getColor().r, agent_->getColor().g, agent_->getColor().b, 128));
-                for (Cell* cell : snapshot.frontier_)
-                {
-                    overlay.setPosition(sf::Vector2f(cell->x_ * grid_.getCellSize(), cell->y_ * grid_.getCellSize()) + offset);
-                    window_.draw(overlay);
-                }
+            color.a = 255;
+            overlay.setFillColor(color);
+            overlay.setPosition(sf::Vector2f(startCell->x_ * grid_.getCellSize(), startCell->y_ * grid_.getCellSize()) + offset);
+            window_.draw(overlay);
 
-                // draw explored
-                overlay.setFillColor(sf::Color(agent_->getColor().r, agent_->getColor().g, agent_->getColor().b, 64));
-                for (Cell* cell : snapshot.explored_)
-                {
-                    overlay.setPosition(sf::Vector2f(cell->x_ * grid_.getCellSize(), cell->y_ * grid_.getCellSize()) + offset);
-                    window_.draw(overlay);
-                }
-            }
-            else if (agent_ && app_state_ == AppState::kDone)
-            {
-                sf::RectangleShape overlay(sf::Vector2f(grid_.getCellSize(), grid_.getCellSize()));
-
-                // draw path
-                overlay.setFillColor(sf::Color(agent_->getColor().r, agent_->getColor().g, agent_->getColor().b, 150));
-                for (Cell* cell : agent_->path_)
-                {
-                    overlay.setPosition(sf::Vector2f(cell->x_ * grid_.getCellSize(), cell->y_ * grid_.getCellSize()) + offset);
-                    window_.draw(overlay);
-                }
-            }
+            color.a = 128;
+            overlay.setFillColor(color);
+            overlay.setPosition(sf::Vector2f(goalCell->x_ * grid_.getCellSize(), goalCell->y_ * grid_.getCellSize()) + offset);
+            window_.draw(overlay);
             break;
         }
-        case GameMode::kMultiAgent:
+        case AppState::kAnimating:
         {
-            for (auto& agent : agents_)
+            if (agent.snapshots_.empty()) return;
+            Snapshot& snapshot = agent.snapshots_[agent.snapshot_index_];
+
+            color.a = 128;
+            overlay.setFillColor(color);
+            for (Cell* cell : snapshot.frontier_)
             {
-                if (agent && app_state_ == AppState::kIdle)
-                {
-                    //std::cout << ((agent) ? "agent is valid\n" : "agent is not valid\n");
-                    sf::RectangleShape overlayStart(sf::Vector2f(grid_.getCellSize(), grid_.getCellSize()));
-                    sf::RectangleShape overlayGoal(sf::Vector2f(grid_.getCellSize(), grid_.getCellSize()));
+                overlay.setPosition(sf::Vector2f(cell->x_ * grid_.getCellSize(), cell->y_ * grid_.getCellSize()) + offset);
+                window_.draw(overlay);
+            }
 
+            color.a = 64;
+            overlay.setFillColor(color);
+            for (Cell* cell : snapshot.explored_)
+            {
+                overlay.setPosition(sf::Vector2f(cell->x_ * grid_.getCellSize(), cell->y_ * grid_.getCellSize()) + offset);
+                window_.draw(overlay);
+            }
 
-                    overlayStart.setFillColor(sf::Color(agent->getColor().r, agent->getColor().g, agent->getColor().b, 255));
-                    overlayGoal.setFillColor(sf::Color(agent->getColor().r, agent->getColor().g, agent->getColor().b, 100));
-                    Cell* startCell = agent->getStartCell();
-                    Cell* goalCell = agent->getGoalCell();
-                    overlayStart.setPosition(sf::Vector2f(startCell->x_ * grid_.getCellSize(), startCell->y_ * grid_.getCellSize()) + offset);
-                    overlayGoal.setPosition(sf::Vector2f(goalCell->x_ * grid_.getCellSize(), goalCell->y_ * grid_.getCellSize()) + offset);
-                    window_.draw(overlayStart);
-                    window_.draw(overlayGoal);
-                }
+            break;
+        }
+        case AppState::kDone:
+        {
+            if (agent.snapshots_.empty()) return;
+            color.a = 150;
+            overlay.setFillColor(color);
+            for (Cell* cell : agent.path_)
+            {
+                overlay.setPosition(sf::Vector2f(cell->x_ * grid_.getCellSize(), cell->y_ * grid_.getCellSize()) + offset);
+                window_.draw(overlay);
             }
             break;
         }
@@ -303,17 +309,34 @@ void Game::onMouseClick(const sf::Event::MouseButtonPressed &mouseEvent, const s
 
 void Game::runAStar()
 {
-    if (placement_state_ != PlacementState::kPlacingObstacles) return;
-
     auto start = std::chrono::high_resolution_clock::now();
-    agent_.emplace(start_cell_, goal_cell_, grid_, sf::Color::Blue);
-    agent_->runAStar();
+
+    if (game_mode_ == GameMode::kSingleAgent)
+    {
+        if (placement_state_ != PlacementState::kPlacingObstacles) return;
+        agents_.clear();
+        agents_.push_back(std::make_unique<Agent>(start_cell_, goal_cell_, grid_, sf::Color::Blue));
+    }
+
+    for (auto& agent : agents_)
+    {
+        agent->runAStar();
+    }
+
     auto end = std::chrono::high_resolution_clock::now();
 
-    // Save agent's metrics to display
-    agent_->metrics_.search_time = std::chrono::duration<double, std::milli>(end - start).count();
-    agent_->metrics_.path_found = !agent_->path_.empty();
-    agent_->metrics_.path_size = agent_->path_.size();
+    for (auto& agent : agents_)
+    {
+        agent->metrics_.search_time = std::chrono::duration<double, std::milli>(end - start).count();
+        agent->metrics_.path_found = !agent->path_.empty();
+        agent->metrics_.path_size = agent->path_.size();
+    }
+}
+
+void Game::initAgents()
+{
+    agents_.push_back(std::make_unique<Agent>(&grid_.cells_[0][0], &grid_.cells_[49][49], grid_, sf::Color::Red));
+    agents_.push_back(std::make_unique<Agent>(&grid_.cells_[0][49], &grid_.cells_[49][0], grid_, sf::Color::Blue));
 }
 
 sf::Vector2f Game::getGridOffset() const
@@ -410,11 +433,15 @@ void Game::reset()
         }
     }
 
-    agent_.reset();
+    agents_.clear();
+
+    if (game_mode_ == GameMode::kMultiAgentSequential || game_mode_ == GameMode::kMultiAgentThreaded)
+    {
+        initAgents();
+    }
 
     start_cell_ = nullptr;
     goal_cell_ = nullptr;
-
     placement_state_ = PlacementState::kNeedsStart;
     app_state_ = AppState::kIdle;
 }
