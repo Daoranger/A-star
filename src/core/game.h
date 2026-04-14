@@ -78,6 +78,8 @@ private:
     float delay_ = 0.01;
     sf::Clock imgui_clock_;
 
+    Metrics multiAgentsSeqMetrics {};
+
     PlacementState placement_state_ = PlacementState::kNeedsStart;
     InputMode input_mode_ = InputMode::kSelecting;
     AppState app_state_ = AppState::kIdle;

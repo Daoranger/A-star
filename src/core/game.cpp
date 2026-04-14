@@ -160,14 +160,11 @@ void Game::update()
     ImGui::SetNextWindowSize(ImVec2(330, 170));
     ImGui::Begin("Metrics");
     ImGui::SetWindowFontScale(2.0f);
-    for (auto& agent : agents_)
-    {
-        ImGui::Text("Path Found: %s", agent->metrics_.path_found ? "Yes" : "No");
-        ImGui::Text("Path Length: %zu", agent->metrics_.path_size);
-        ImGui::Text("Nodes Expanded: %zu", agent->metrics_.nodes_expanded);
-        ImGui::Text("Search Time: %.2f ms", agent->metrics_.search_time);
-        ImGui::Separator();
-    }
+    ImGui::Text("Search Time: %.2f ms", multiAgentsSeqMetrics.search_time);
+    //ImGui::Text("Path Found: %s", agent->metrics_.path_found ? "Yes" : "No");
+    //ImGui::Text("Path Length: %zu", agent->metrics_.path_size);
+    //ImGui::Text("Nodes Expanded: %zu", agent->metrics_.nodes_expanded);
+    //ImGui::Separator();
     ImGui::End();
 }
 
@@ -307,7 +304,6 @@ void Game::onMouseClick(const sf::Event::MouseButtonPressed &mouseEvent, const s
 
 void Game::runAStar()
 {
-    auto start = std::chrono::high_resolution_clock::now();
 
     if (game_mode_ == GameMode::kSingleAgent)
     {
@@ -315,20 +311,15 @@ void Game::runAStar()
         agents_.clear();
         agents_.push_back(std::make_unique<Agent>(start_cell_, goal_cell_, grid_, sf::Color::Blue));
     }
-
+    
+    auto start = std::chrono::high_resolution_clock::now();
     for (auto& agent : agents_)
     {
         agent->runAStar();
     }
-
     auto end = std::chrono::high_resolution_clock::now();
 
-    for (auto& agent : agents_)
-    {
-        agent->metrics_.search_time = std::chrono::duration<double, std::milli>(end - start).count();
-        agent->metrics_.path_found = !agent->path_.empty();
-        agent->metrics_.path_size = agent->path_.size();
-    }
+    multiAgentsSeqMetrics.search_time = std::chrono::duration<double, std::milli>(end - start).count();
 }
 
 void Game::initAgents()
