@@ -70,7 +70,7 @@ public:
     void drawAgent(Agent& agent);
     void onDrag(const sf::Event::MouseMoved& mouseEvent, const sf::Vector2f& worldPos);
     void onMouseClick(const sf::Event::MouseButtonPressed& mouseEvent, const sf::Vector2f& worldPos);
-    void runAStar();
+    void runAlgorithm();
     void initAgents();
     void saveGridToFile();
     void loadGridFromFile();
@@ -101,7 +101,7 @@ private:
     AppState app_state_ = AppState::kIdle;
     GameMode game_mode_ = GameMode::kSinglePathfinding;
     ParallelStrategy parallel_strategy_ = ParallelStrategy::kSequential;
-    Algorithm algorithm_ = Algorithm::kDijkstra;
+    Algorithm algorithm_ = Algorithm::kBFS;
     bool is_dragging_ = false;
 
 

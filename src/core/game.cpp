@@ -80,7 +80,7 @@ void Game::processEvents()
                 {
                     if ((game_mode_ == GameMode::kSinglePathfinding && placement_state_ == PlacementState::kPlacingObstacles) || game_mode_ == GameMode::kMultiPathfinding)
                     {
-                        runAStar();
+                        runAlgorithm();
                         app_state_ = AppState::kAnimating;
                     }
                 }
@@ -177,7 +177,7 @@ void Game::update()
     ImGui::SetWindowFontScale(2.0f);
     ImGui::Text("Search Time: %.2f ms", multiAgentsSeqMetrics.search_time);
     //ImGui::Text("Path Found: %s", agent->metrics_.path_found ? "Yes" : "No");
-    //ImGui::Text("Path Length: %zu", agent->metrics_.path_size);
+    ImGui::Text("Path Length: %zu", multiAgentsSeqMetrics.path_size);
     //ImGui::Text("Nodes Expanded: %zu", agent->metrics_.nodes_expanded);
     ImGui::Separator();
     ImGui::End();
@@ -317,7 +317,7 @@ void Game::onMouseClick(const sf::Event::MouseButtonPressed &mouseEvent, const s
     }
 }
 
-void Game::runAStar()
+void Game::runAlgorithm()
 {
     if (game_mode_ == GameMode::kSinglePathfinding)
     {
@@ -338,16 +338,25 @@ void Game::runAStar()
                     case Algorithm::kAStar:
                     {
                         agent->runAStar();
+                        break;
                     }
                     case Algorithm::kDijkstra:
                     {
                         agent->runDijkstra();
+                        break;
                     }
                     case Algorithm::kGreedy:
                     {
                         agent->runGreedy();
+                        break;
+                    }
+                    case Algorithm::kBFS:
+                    {
+                        agent->runBFS();
+                        break;
                     }
                 }
+                multiAgentsSeqMetrics.path_size = agent->path_.size();
             }
             break;
         }

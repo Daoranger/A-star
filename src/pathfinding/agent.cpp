@@ -315,6 +315,7 @@ void Agent::runBFS()
             }
 
             // if we haven't visited the cell
+            visitedSet.insert(neighborCell);
             parent_[neighborCell] = currCell;
             openDeque.push_back(neighborCell);
         }
