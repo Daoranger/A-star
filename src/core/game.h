@@ -8,7 +8,6 @@
 #ifndef PATHFINDING_GAME_H
 #define PATHFINDING_GAME_H
 
-#include <optional>
 
 #include "SFML/Graphics/RenderWindow.hpp"
 
@@ -68,6 +67,8 @@ public:
     void onMouseClick(const sf::Event::MouseButtonPressed& mouseEvent, const sf::Vector2f& worldPos);
     void runAStar();
     void initAgents();
+    void saveGridToFile();
+    void loadGridFromFile();
 
 private:
 

@@ -1,14 +1,16 @@
 #include "../core/game.h"
 
-#include <iostream>
 #include <chrono>
 #include <future>
 #include <thread>
+#include <fstream>
 
 #include "imgui.h"
 #include "imgui-SFML.h"
 
 #include <omp.h>
+
+#include "SFML/Audio/Music.hpp"
 
 Game::Game()
     : window_(sf::VideoMode( { 1200, 700 } ), "A* Pathfinding")
@@ -86,6 +88,15 @@ void Game::processEvents()
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num4)
             {
                 reset();
+            }
+            else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num5)
+            {
+                // Save Grid
+                saveGridToFile();
+            }
+            else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num6)
+            {
+                loadGridFromFile();
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Tab)
             {
@@ -370,13 +381,77 @@ void Game::runAStar()
 
 void Game::initAgents()
 {
-    for (int i = 0; i < 2500; i++)
+    for (int i = 0; i < 1; i++)
     {
         agents_.push_back(std::make_unique<Agent>(&grid_.cells_[0][0], &grid_.cells_[49][49], grid_, sf::Color::Red));
         agents_.push_back(std::make_unique<Agent>(&grid_.cells_[0][49], &grid_.cells_[49][0], grid_, sf::Color::Blue));
         agents_.push_back(std::make_unique<Agent>(&grid_.cells_[49][0], &grid_.cells_[0][49], grid_, sf::Color::Green));
         agents_.push_back(std::make_unique<Agent>(&grid_.cells_[49][49], &grid_.cells_[0][0], grid_, sf::Color::Magenta));
     }
+}
+
+void Game::saveGridToFile()
+{
+    std::ofstream outGridFile{"Grid.txt"};
+
+    if (outGridFile.is_open())
+    {
+        outGridFile << grid_.getRows() << " " << grid_.getCols() << "\n";
+
+        for (int i = 0; i < grid_.getRows(); i++)
+        {
+            for (int j = 0; j < grid_.getCols(); j++)
+            {
+                if (grid_.cells_[i][j].getType() != CellType::obstacle)
+                {
+                    outGridFile << "0";
+                }
+                else
+                {
+                    outGridFile << "1";
+                }
+            }
+            outGridFile << "\n";
+        }
+    }
+    outGridFile.close();
+}
+
+void Game::loadGridFromFile()
+{
+    reset();
+    std::ifstream inGridFile{"Grid.txt"};
+
+    if (!inGridFile)
+    {
+        std::cerr << "Failed to open Grid.txt\n";
+    }
+
+    std::string firstLine;
+    int row {};
+    int col {};
+    if (std::getline(inGridFile, firstLine))
+    {
+        std::stringstream ss(firstLine);
+        ss >> row >> col;
+    }
+
+    char c;
+    for (int i = 0; i < row; ++i)
+    {
+        for (int j = 0; j < col; ++j)
+        {
+            if (inGridFile >> c)
+            {
+                if (c == '1')
+                    grid_.cells_[i][j].setType(CellType::obstacle);
+            }
+        }
+    }
+
+    std::cout << "row: " << row << " col: " << col;
+    inGridFile.close();
+
 }
 
 sf::Vector2f Game::getGridOffset() const
