@@ -44,6 +44,9 @@ public:
 
     Agent(Cell* start_cell, Cell* goal_cell, const Grid& grid, sf::Color color);
     void runAStar();
+    void runDijkstra();
+    void runGreedy();
+
     sf::Color getColor() const;
     Cell* getStartCell() const;
     Cell* getGoalCell() const;

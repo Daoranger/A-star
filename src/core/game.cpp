@@ -333,21 +333,7 @@ void Game::runAStar()
         {
             for (auto& agent : agents_)
             {
-                agent->runAStar();
-            }
-            break;
-        }
-        case ParallelStrategy::kAsync:
-        {
-            std::vector<std::future<void>> futures;
-            futures.reserve(agents_.size());
-
-            for (auto& agent : agents_) {
-                futures.push_back(std::async(std::launch::async, &Agent::runAStar, agent.get()));
-            }
-
-            for (auto& f : futures) {
-                f.get();
+                agent->runGreedy();
             }
             break;
         }
@@ -356,7 +342,7 @@ void Game::runAStar()
             //std::cout << "OpenMP Threads: " << omp_get_max_threads() << std::endl;
             #pragma omp parallel for
             for (int i = 0; i < static_cast<int>(agents_.size()); ++i) {
-                agents_[i]->runAStar();
+                agents_[i]->runGreedy();
             }
             break;
         }
@@ -365,7 +351,7 @@ void Game::runAStar()
             std::vector<std::thread> threads;
             for (auto& agent : agents_) {
                 // create a thread for EVERY agent
-                threads.emplace_back(&Agent::runAStar, agent.get());
+                threads.emplace_back(&Agent::runGreedy, agent.get());
             }
             for (auto& t : threads) {
                 t.join(); // Wait for all threads to finish
