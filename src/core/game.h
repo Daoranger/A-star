@@ -52,6 +52,8 @@ enum class Algorithm
     kAStar,
     kDijkstra,
     kGreedy,
+    kBFS,
+    kDFS
 };
 
 class Game
@@ -99,7 +101,7 @@ private:
     AppState app_state_ = AppState::kIdle;
     GameMode game_mode_ = GameMode::kSinglePathfinding;
     ParallelStrategy parallel_strategy_ = ParallelStrategy::kSequential;
-    Algorithm algorithm_ = Algorithm::kAStar;
+    Algorithm algorithm_ = Algorithm::kDijkstra;
     bool is_dragging_ = false;
 
 

@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <deque>
 
 #include "../grid/cell.h"
 #include "../grid/grid.h"
@@ -46,6 +47,8 @@ public:
     void runAStar();
     void runDijkstra();
     void runGreedy();
+    void runBFS();
+    void runDFS();
 
     sf::Color getColor() const;
     Cell* getStartCell() const;
@@ -69,6 +72,8 @@ private:
 
     // Uses to extract nodes in closed set for snapshots
     std::vector<Cell*> extractNodes(const std::unordered_set<Cell*>& unordered_set);
+
+    std::vector<Cell*> extractNodes(const std::deque<Cell*>& deque);
 
 
     const Grid& grid_;
