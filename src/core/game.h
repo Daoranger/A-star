@@ -36,9 +36,8 @@ enum class AppState
 
 enum class GameMode
 {
-    kSingleAgent,
-    kMultiAgentSequential,
-    kMultiAgentThreaded
+    kSinglePathfinding,
+    kMultiPathfinding,
 };
 
 enum class ParallelStrategy
@@ -94,7 +93,7 @@ private:
     PlacementState placement_state_ = PlacementState::kNeedsStart;
     InputMode input_mode_ = InputMode::kSelecting;
     AppState app_state_ = AppState::kIdle;
-    GameMode game_mode_ = GameMode::kSingleAgent;
+    GameMode game_mode_ = GameMode::kSinglePathfinding;
     ParallelStrategy parallel_strategy_ = ParallelStrategy::kOpenMP;
     bool is_dragging_ = false;
 

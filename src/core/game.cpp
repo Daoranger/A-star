@@ -78,7 +78,7 @@ void Game::processEvents()
             {
                 if (app_state_ == AppState::kIdle)
                 {
-                    if ((game_mode_ == GameMode::kSingleAgent && placement_state_ == PlacementState::kPlacingObstacles) || game_mode_ == GameMode::kMultiAgentSequential)
+                    if ((game_mode_ == GameMode::kSinglePathfinding && placement_state_ == PlacementState::kPlacingObstacles) || game_mode_ == GameMode::kMultiPathfinding)
                     {
                         runAStar();
                         app_state_ = AppState::kAnimating;
@@ -100,13 +100,13 @@ void Game::processEvents()
             }
             else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Tab)
             {
-                if (game_mode_ == GameMode::kSingleAgent)
+                if (game_mode_ == GameMode::kSinglePathfinding)
                 {
-                    game_mode_ = GameMode::kMultiAgentSequential;
+                    game_mode_ = GameMode::kMultiPathfinding;
                 }
                 else
                 {
-                    game_mode_ = GameMode::kSingleAgent;
+                    game_mode_ = GameMode::kSinglePathfinding;
                 }
                 reset();
             }
@@ -319,7 +319,7 @@ void Game::onMouseClick(const sf::Event::MouseButtonPressed &mouseEvent, const s
 
 void Game::runAStar()
 {
-    if (game_mode_ == GameMode::kSingleAgent)
+    if (game_mode_ == GameMode::kSinglePathfinding)
     {
         if (placement_state_ != PlacementState::kPlacingObstacles) return;
         agents_.clear();
@@ -385,8 +385,6 @@ void Game::initAgents()
     {
         agents_.push_back(std::make_unique<Agent>(&grid_.cells_[0][0], &grid_.cells_[49][49], grid_, sf::Color::Red));
         agents_.push_back(std::make_unique<Agent>(&grid_.cells_[0][49], &grid_.cells_[49][0], grid_, sf::Color::Blue));
-        agents_.push_back(std::make_unique<Agent>(&grid_.cells_[49][0], &grid_.cells_[0][49], grid_, sf::Color::Green));
-        agents_.push_back(std::make_unique<Agent>(&grid_.cells_[49][49], &grid_.cells_[0][0], grid_, sf::Color::Magenta));
     }
 }
 
@@ -463,7 +461,7 @@ sf::Vector2f Game::getGridOffset() const
 
 void Game::selectCell(int row, int col)
 {
-    if (game_mode_ != GameMode::kSingleAgent)
+    if (game_mode_ != GameMode::kSinglePathfinding)
     {
         if (grid_.cells_[row][col].getType() == CellType::open)
         {
@@ -559,7 +557,7 @@ void Game::reset()
 
     agents_.clear();
 
-    if (game_mode_ == GameMode::kMultiAgentSequential || game_mode_ == GameMode::kMultiAgentThreaded)
+    if (game_mode_ == GameMode::kMultiPathfinding)
     {
         initAgents();
     }
