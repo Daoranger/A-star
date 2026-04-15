@@ -99,6 +99,7 @@ private:
     AppState app_state_ = AppState::kIdle;
     GameMode game_mode_ = GameMode::kSinglePathfinding;
     ParallelStrategy parallel_strategy_ = ParallelStrategy::kSequential;
+    Algorithm algorithm_ = Algorithm::kAStar;
     bool is_dragging_ = false;
 
 

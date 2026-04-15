@@ -333,7 +333,21 @@ void Game::runAStar()
         {
             for (auto& agent : agents_)
             {
-                agent->runGreedy();
+                switch (algorithm_)
+                {
+                    case Algorithm::kAStar:
+                    {
+                        agent->runAStar();
+                    }
+                    case Algorithm::kDijkstra:
+                    {
+                        agent->runDijkstra();
+                    }
+                    case Algorithm::kGreedy:
+                    {
+                        agent->runGreedy();
+                    }
+                }
             }
             break;
         }
@@ -342,7 +356,7 @@ void Game::runAStar()
             //std::cout << "OpenMP Threads: " << omp_get_max_threads() << std::endl;
             #pragma omp parallel for
             for (int i = 0; i < static_cast<int>(agents_.size()); ++i) {
-                agents_[i]->runGreedy();
+                agents_[i]->runAStar();
             }
             break;
         }
