@@ -330,6 +330,71 @@ void Agent::runBFS()
     metrics_.nodes_expanded = visitedSet.size();
 }
 
+void Agent::runDFS()
+{
+    Snapshot snapshot;
+    std::deque<Cell*> openDeque;
+    std::unordered_set<Cell*> visitedSet;
+
+    // start cell
+    parent_[start_cell_] = nullptr;
+    openDeque.push_back(start_cell_);
+    visitedSet.insert(start_cell_);
+
+    snapshot.frontier_ = extractNodes(openDeque);
+    snapshot.explored_ = extractNodes(visitedSet);
+    snapshots_.push_back(snapshot);
+
+    // processing current cell in open set
+    while (!openDeque.empty())
+    {
+        Cell* currCell = openDeque.back();
+        openDeque.pop_back();
+
+        // if current cell is goal, reconstruct and return path
+        if (*currCell == *goal_cell_)
+        {
+            std::vector<Cell*> path;
+
+            while (currCell != nullptr)
+            {
+                path.push_back(currCell);
+                currCell = parent_.at(currCell);
+            }
+            // change from goal-to-start order to start-to-goal order
+            std::reverse(path.begin(), path.end());
+            path_ = path;
+            metrics_.nodes_expanded = visitedSet.size() + 1;
+            return;
+        }
+
+        // for each neighbor of current cell
+        for (auto& n : getValidNeighbors(*currCell))
+        {
+            Cell* neighborCell = const_cast<Cell*>(&grid_.cells_[n.first][n.second]);
+
+            // if neighbor in closedList (we have visited)
+            if (visitedSet.find(neighborCell) != visitedSet.end())
+            {
+                continue;
+            }
+
+            // if we haven't visited the cell
+            visitedSet.insert(neighborCell);
+            parent_[neighborCell] = currCell;
+            openDeque.push_back(neighborCell);
+        }
+
+        // take Snapshot AFTER adding neighbors
+        snapshot.frontier_ = extractNodes(openDeque);
+        snapshot.explored_ = extractNodes(visitedSet);
+        snapshots_.push_back(snapshot);
+    }
+
+    // no path found
+    metrics_.nodes_expanded = visitedSet.size();
+}
+
 sf::Color Agent::getColor() const
 {
     return color_;

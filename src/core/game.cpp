@@ -355,6 +355,11 @@ void Game::runAlgorithm()
                         agent->runBFS();
                         break;
                     }
+                    case Algorithm::kDFS:
+                    {
+                        agent->runDFS();
+                        break;
+                    }
                 }
                 multiAgentsSeqMetrics.path_size = agent->path_.size();
             }

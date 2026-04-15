@@ -91,7 +91,7 @@ private:
     sf::View view_;
     Grid grid_;
     sf::Clock snapshot_clock_;
-    float delay_ = 0.01;
+    float delay_ = 1;
     sf::Clock imgui_clock_;
 
     Metrics multiAgentsSeqMetrics {};
@@ -101,7 +101,7 @@ private:
     AppState app_state_ = AppState::kIdle;
     GameMode game_mode_ = GameMode::kSinglePathfinding;
     ParallelStrategy parallel_strategy_ = ParallelStrategy::kSequential;
-    Algorithm algorithm_ = Algorithm::kBFS;
+    Algorithm algorithm_ = Algorithm::kDFS;
     bool is_dragging_ = false;
 
 
