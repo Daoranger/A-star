@@ -71,6 +71,7 @@ public:
     void onDrag(const sf::Event::MouseMoved& mouseEvent, const sf::Vector2f& worldPos);
     void onMouseClick(const sf::Event::MouseButtonPressed& mouseEvent, const sf::Vector2f& worldPos);
     void runAlgorithm();
+    void runAlgorithmOnAgent(Agent* agent, Algorithm algorithm);
     void initAgents();
     void saveGridToFile();
     void loadGridFromFile();
@@ -91,7 +92,7 @@ private:
     sf::View view_;
     Grid grid_;
     sf::Clock snapshot_clock_;
-    float delay_ = 1;
+    float delay_ = 0.01;
     sf::Clock imgui_clock_;
 
     Metrics multiAgentsSeqMetrics {};
@@ -100,10 +101,9 @@ private:
     InputMode input_mode_ = InputMode::kSelecting;
     AppState app_state_ = AppState::kIdle;
     GameMode game_mode_ = GameMode::kSinglePathfinding;
-    ParallelStrategy parallel_strategy_ = ParallelStrategy::kSequential;
-    Algorithm algorithm_ = Algorithm::kDFS;
+    ParallelStrategy parallel_strategy_ = ParallelStrategy::kOpenMP;
+    Algorithm algorithm_ = Algorithm::kAStar;
     bool is_dragging_ = false;
-
 
 };
 

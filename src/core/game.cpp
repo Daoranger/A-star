@@ -1,5 +1,6 @@
 #include "../core/game.h"
 
+#include <array>
 #include <chrono>
 #include <future>
 #include <thread>
@@ -172,13 +173,17 @@ void Game::update()
     }
 
     ImGui::SFML::Update(window_, imgui_clock_.restart());
-    ImGui::SetNextWindowSize(ImVec2(330, 170));
+    ImGui::SetNextWindowSize(ImVec2(330, 170), ImGuiCond_FirstUseEver);
     ImGui::Begin("Metrics");
     ImGui::SetWindowFontScale(2.0f);
     ImGui::Text("Search Time: %.2f ms", multiAgentsSeqMetrics.search_time);
     //ImGui::Text("Path Found: %s", agent->metrics_.path_found ? "Yes" : "No");
     ImGui::Text("Path Length: %zu", multiAgentsSeqMetrics.path_size);
     //ImGui::Text("Nodes Expanded: %zu", agent->metrics_.nodes_expanded);
+    static constexpr std::array<const char*, 5> kAlgorithmLabels = { "A*", "Dijkstra", "Greedy", "BFS", "DFS" };
+    int algoIndex = static_cast<int>(algorithm_);
+    ImGui::Combo("Algorithm", &algoIndex, kAlgorithmLabels.data(), static_cast<int>(kAlgorithmLabels.size()));
+    algorithm_ = static_cast<Algorithm>(algoIndex);
     ImGui::Separator();
     ImGui::End();
 }
@@ -333,34 +338,7 @@ void Game::runAlgorithm()
         {
             for (auto& agent : agents_)
             {
-                switch (algorithm_)
-                {
-                    case Algorithm::kAStar:
-                    {
-                        agent->runAStar();
-                        break;
-                    }
-                    case Algorithm::kDijkstra:
-                    {
-                        agent->runDijkstra();
-                        break;
-                    }
-                    case Algorithm::kGreedy:
-                    {
-                        agent->runGreedy();
-                        break;
-                    }
-                    case Algorithm::kBFS:
-                    {
-                        agent->runBFS();
-                        break;
-                    }
-                    case Algorithm::kDFS:
-                    {
-                        agent->runDFS();
-                        break;
-                    }
-                }
+                runAlgorithmOnAgent(agent.get(), algorithm_);
                 multiAgentsSeqMetrics.path_size = agent->path_.size();
             }
             break;
@@ -369,20 +347,36 @@ void Game::runAlgorithm()
         {
             //std::cout << "OpenMP Threads: " << omp_get_max_threads() << std::endl;
             #pragma omp parallel for
-            for (int i = 0; i < static_cast<int>(agents_.size()); ++i) {
-                agents_[i]->runAStar();
+            for (int i = 0; i < static_cast<int>(agents_.size()); ++i)
+            {
+                this->runAlgorithmOnAgent(agents_[i].get(), algorithm_);
+            }
+            if (!agents_.empty())
+            {
+                multiAgentsSeqMetrics.path_size = agents_.back()->path_.size();
             }
             break;
         }
         case ParallelStrategy::kPerAgentThread:
         {
             std::vector<std::thread> threads;
-            for (auto& agent : agents_) {
-                // create a thread for EVERY agent
-                threads.emplace_back(&Agent::runGreedy, agent.get());
+            threads.reserve(agents_.size());
+            for (auto& agent : agents_)
+            {
+                Agent* a = agent.get();
+                const Algorithm algo = algorithm_;
+                threads.emplace_back([this, a, algo]()
+                {
+                    this->runAlgorithmOnAgent(a, algo);
+                });
             }
-            for (auto& t : threads) {
-                t.join(); // Wait for all threads to finish
+            for (auto& t : threads)
+            {
+                t.join();
+            }
+            if (!agents_.empty())
+            {
+                multiAgentsSeqMetrics.path_size = agents_.back()->path_.size();
             }
             break;
         }
@@ -391,6 +385,28 @@ void Game::runAlgorithm()
 
 
     multiAgentsSeqMetrics.search_time = std::chrono::duration<double, std::milli>(end - start).count();
+}
+
+void Game::runAlgorithmOnAgent(Agent* agent, Algorithm algorithm)
+{
+    switch (algorithm)
+    {
+        case Algorithm::kAStar:
+            agent->runAStar();
+            break;
+        case Algorithm::kDijkstra:
+            agent->runDijkstra();
+            break;
+        case Algorithm::kGreedy:
+            agent->runGreedy();
+            break;
+        case Algorithm::kBFS:
+            agent->runBFS();
+            break;
+        case Algorithm::kDFS:
+            agent->runDFS();
+            break;
+    }
 }
 
 void Game::initAgents()
