@@ -369,6 +369,14 @@ void Game::renderImGuiPanels()
     ImGui::PopItemWidth();
 
     ImGui::Spacing();
+    ImGui::TextColored(ImVec4(0.70f, 0.85f, 1.f, 1.f), "Heuristic (A*, Greedy, BA*)");
+    ImGui::Separator();
+    ImGui::Spacing();
+    ImGui::Checkbox("Tie-break nudge (×1.001 on h)", &heuristic_tie_nudge_);
+    ImGui::SliderInt("h weight (f = g + w·h)", &heuristic_weight_, 1, 10, "%d");
+    ImGui::TextDisabled("w = 1: admissible A*. w > 1: weighted (faster, may be suboptimal).");
+
+    ImGui::Spacing();
     ImGui::TextColored(ImVec4(0.70f, 0.85f, 1.f, 1.f), "Parallel strategy");
     ImGui::Separator();
     ImGui::Spacing();
@@ -627,6 +635,7 @@ void Game::runAlgorithm()
 
 void Game::runAlgorithmOnAgent(Agent* agent, Algorithm algorithm)
 {
+    agent->setHeuristicOptions(heuristic_tie_nudge_, static_cast<double>(heuristic_weight_));
     switch (algorithm)
     {
         case Algorithm::kAStar:

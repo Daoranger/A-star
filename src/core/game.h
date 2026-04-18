@@ -114,6 +114,11 @@ private:
     int multi_agent_count_ = 2;
     bool record_search_snapshots_ = true;
 
+    /// A*, Greedy, BA*: optional 1.001 tie-break on equal Manhattan; off uses pure Manhattan.
+    bool heuristic_tie_nudge_ = true;
+    /// Integer multiplier on h in f = g + h (1 = standard A*; >1 weighted / greedier).
+    int heuristic_weight_ = 1;
+
 };      
 
 

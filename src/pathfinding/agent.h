@@ -57,6 +57,9 @@ public:
     /// Drop path, snapshots, and search maps so bulk teardown (e.g. Reset) stays fast.
     void clearSearchState() noexcept;
 
+    /// Used by A*, Greedy, BA*: `h = Manhattan * (nudge ? 1.001 : 1) * weight` (f = g + h).
+    void setHeuristicOptions(bool tie_break_nudge, double weight) noexcept;
+
     sf::Color getColor() const;
     Cell* getStartCell() const;
     Cell* getGoalCell() const;
@@ -90,6 +93,9 @@ private:
     Cell* goal_cell_;
 
     bool record_search_snapshots_;
+
+    bool heuristic_tie_break_nudge_ = true;
+    double heuristic_weight_ = 1.0;
 
     std::unordered_map<Cell*, double> g_;
     std::unordered_map<Cell*, double> f_;

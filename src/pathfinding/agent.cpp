@@ -18,6 +18,12 @@ Agent::Agent(Cell* start_cell, Cell* goal_cell, const Grid& grid, sf::Color colo
 {
 }
 
+void Agent::setHeuristicOptions(bool tie_break_nudge, double weight) noexcept
+{
+    heuristic_tie_break_nudge_ = tie_break_nudge;
+    heuristic_weight_ = std::max(0.0, weight);
+}
+
 void Agent::clearSearchState() noexcept
 {
     snapshots_.clear();
@@ -729,10 +735,10 @@ Cell * Agent::getGoalCell() const
 
 double Agent::heuristic(const Cell &currCell, const Cell &goalCell)
 {
-    // Manhattan distance
-    double dx = std::abs(currCell.x_ - goalCell.x_);
-    double dy = std::abs(currCell.y_ - goalCell.y_);
-    return (dx + dy) * 1.001; // tiny nudge breaks ties
+    const double manhattan = static_cast<double>(std::abs(currCell.x_ - goalCell.x_))
+        + static_cast<double>(std::abs(currCell.y_ - goalCell.y_));
+    const double tie = heuristic_tie_break_nudge_ ? 1.001 : 1.0;
+    return manhattan * tie * heuristic_weight_;
 }
 
 std::vector<std::pair<int, int>> Agent::getValidNeighbors(const Cell &currCell) const
