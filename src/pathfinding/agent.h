@@ -51,6 +51,9 @@ public:
     void runBFS();
     void runDFS();
 
+    /// Drop path, snapshots, and search maps so bulk teardown (e.g. Reset) stays fast.
+    void clearSearchState() noexcept;
+
     sf::Color getColor() const;
     Cell* getStartCell() const;
     Cell* getGoalCell() const;

@@ -96,7 +96,7 @@ private:
     float delay_ = 0.01;
     sf::Clock imgui_clock_;
 
-    Metrics multiAgentsSeqMetrics {};
+    Metrics metrics_{};
 
     PlacementState placement_state_ = PlacementState::kNeedsStart;
     InputMode input_mode_ = InputMode::kSelecting;
@@ -107,7 +107,9 @@ private:
     bool is_dragging_ = false;
     bool show_pathfinding_panel_ = true;
 
-    static constexpr int kMaxMultiAgents = 256;
+    static constexpr int kMaxMultiAgents = 10000;
+    /// Above this, agents are not pre-allocated (fast Reset); built on Run search.
+    static constexpr int kEagerMultiAgentBuildLimit = 2048;
     int multi_agent_count_ = 2;
     bool record_search_snapshots_ = true;
 

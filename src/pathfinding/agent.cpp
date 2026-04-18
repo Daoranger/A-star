@@ -17,11 +17,24 @@ Agent::Agent(Cell* start_cell, Cell* goal_cell, const Grid& grid, sf::Color colo
 {
 }
 
+void Agent::clearSearchState() noexcept
+{
+    snapshots_.clear();
+    snapshot_index_ = 0;
+    path_.clear();
+    metrics_ = {};
+    g_.clear();
+    f_.clear();
+    h_.clear();
+    parent_.clear();
+}
+
 void Agent::runAStar()
 {
     snapshots_.clear();
     snapshot_index_ = 0;
     path_.clear();
+    metrics_ = {};
 
     Snapshot snapshot;
     std::set<Cell*, CompareCell> openSet(CompareCell{f_});
@@ -63,6 +76,7 @@ void Agent::runAStar()
             std::reverse(path.begin(), path.end());
             path_ = path;
             metrics_.nodes_expanded = closedSet.size() + 1;
+            metrics_.path_found = true;
             return;
         }
 
@@ -111,6 +125,7 @@ void Agent::runAStar()
 
     // no path found
     metrics_.nodes_expanded = closedSet.size();
+    metrics_.path_found = false;
 }
 
 void Agent::runDijkstra()
@@ -118,6 +133,7 @@ void Agent::runDijkstra()
     snapshots_.clear();
     snapshot_index_ = 0;
     path_.clear();
+    metrics_ = {};
 
     Snapshot snapshot;
     std::set<Cell*, CompareCell> openSet(CompareCell{f_});
@@ -158,6 +174,7 @@ void Agent::runDijkstra()
             std::reverse(path.begin(), path.end());
             path_ = path;
             metrics_.nodes_expanded = closedSet.size() + 1;
+            metrics_.path_found = true;
             return;
         }
 
@@ -205,6 +222,7 @@ void Agent::runDijkstra()
 
     // no path found
     metrics_.nodes_expanded = closedSet.size();
+    metrics_.path_found = false;
 }
 
 void Agent::runGreedy()
@@ -212,6 +230,7 @@ void Agent::runGreedy()
     snapshots_.clear();
     snapshot_index_ = 0;
     path_.clear();
+    metrics_ = {};
 
     Snapshot snapshot;
     std::set<Cell*, CompareCell> openSet(CompareCell{f_});
@@ -252,6 +271,7 @@ void Agent::runGreedy()
             std::reverse(path.begin(), path.end());
             path_ = path;
             metrics_.nodes_expanded = closedSet.size() + 1;
+            metrics_.path_found = true;
             return;
         }
 
@@ -294,6 +314,7 @@ void Agent::runGreedy()
 
     // no path found
     metrics_.nodes_expanded = closedSet.size();
+    metrics_.path_found = false;
 }
 
 void Agent::runBFS()
@@ -301,6 +322,7 @@ void Agent::runBFS()
     snapshots_.clear();
     snapshot_index_ = 0;
     path_.clear();
+    metrics_ = {};
 
     Snapshot snapshot;
     std::deque<Cell*> openDeque;
@@ -338,6 +360,7 @@ void Agent::runBFS()
             std::reverse(path.begin(), path.end());
             path_ = path;
             metrics_.nodes_expanded = visitedSet.size() + 1;
+            metrics_.path_found = true;
             return;
         }
 
@@ -369,6 +392,7 @@ void Agent::runBFS()
 
     // no path found
     metrics_.nodes_expanded = visitedSet.size();
+    metrics_.path_found = false;
 }
 
 void Agent::runDFS()
@@ -376,6 +400,7 @@ void Agent::runDFS()
     snapshots_.clear();
     snapshot_index_ = 0;
     path_.clear();
+    metrics_ = {};
 
     Snapshot snapshot;
     std::deque<Cell*> openDeque;
@@ -413,6 +438,7 @@ void Agent::runDFS()
             std::reverse(path.begin(), path.end());
             path_ = path;
             metrics_.nodes_expanded = visitedSet.size() + 1;
+            metrics_.path_found = true;
             return;
         }
 
@@ -444,6 +470,7 @@ void Agent::runDFS()
 
     // no path found
     metrics_.nodes_expanded = visitedSet.size();
+    metrics_.path_found = false;
 }
 
 sf::Color Agent::getColor() const

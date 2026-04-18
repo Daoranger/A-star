@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <cstdio>
 #include <future>
 #include <thread>
 #include <fstream>
@@ -105,7 +106,8 @@ void Game::processEvents()
 
 void Game::update()
 {
-    if (app_state_ == AppState::kAnimating && !agents_.empty())
+    if (game_mode_ == GameMode::kSinglePathfinding && app_state_ == AppState::kAnimating
+        && !agents_.empty())
     {
         if (snapshot_clock_.getElapsedTime().asSeconds() > delay_)
         {
@@ -238,14 +240,37 @@ void Game::renderImGuiPanels()
         ImGui::PushItemWidth(-1.f);
         const int prevCount = multi_agent_count_;
         int countEdit = multi_agent_count_;
-        ImGui::InputInt("Agent count", &countEdit, 1, 4);
+        ImGui::InputInt("Agent count", &countEdit, 1, 100);
         multi_agent_count_ = std::clamp(countEdit, 1, kMaxMultiAgents);
         ImGui::PopItemWidth();
-        ImGui::TextDisabled("Same start/goal for every agent (corner to corner).");
+
+        ImGui::TextUnformatted("Presets");
+        static constexpr int kCountPresets[] = { 10, 100, 1000, 10000 };
+        static constexpr const char* kPresetLabels[] = { "10", "100", "1k", "10k" };
+        constexpr std::size_t kPresetCount = sizeof(kCountPresets) / sizeof(kCountPresets[0]);
+        for (std::size_t i = 0; i < kPresetCount; ++i)
+        {
+            if (i > 0)
+            {
+                ImGui::SameLine();
+            }
+            char id[48];
+            std::snprintf(id, sizeof(id), "%s##preset%zu", kPresetLabels[i], i);
+            if (ImGui::SmallButton(id))
+            {
+                multi_agent_count_ = kCountPresets[i];
+            }
+        }
+
+        ImGui::TextDisabled("Same start/goal for every agent (corner to corner). Max %d.", kMaxMultiAgents);
         if (prevCount != multi_agent_count_ && app_state_ == AppState::kIdle)
         {
             agents_.clear();
-            initAgents();
+            agents_.shrink_to_fit();
+            if (multi_agent_count_ <= kEagerMultiAgentBuildLimit)
+            {
+                initAgents();
+            }
         }
     }
 
@@ -260,7 +285,11 @@ void Game::renderImGuiPanels()
         && app_state_ == AppState::kIdle)
     {
         agents_.clear();
-        initAgents();
+        agents_.shrink_to_fit();
+        if (multi_agent_count_ <= kEagerMultiAgentBuildLimit)
+        {
+            initAgents();
+        }
     }
 
     ImGui::Spacing();
@@ -303,7 +332,7 @@ void Game::renderImGuiPanels()
     if (ImGui::Button("Run search", ImVec2(-1.f, 50.f)))
     {
         runAlgorithm();
-        app_state_ = AppState::kAnimating;
+        app_state_ = game_mode_ == GameMode::kMultiPathfinding ? AppState::kDone : AppState::kAnimating;
     }
     ImGui::EndDisabled();
     if (!canRun && app_state_ == AppState::kIdle && game_mode_ == GameMode::kSinglePathfinding)
@@ -354,11 +383,16 @@ void Game::renderImGuiPanels()
     ImGui::PopItemWidth();
 
     ImGui::Spacing();
-    ImGui::TextColored(ImVec4(0.70f, 0.85f, 1.f, 1.f), "Last run");
+    ImGui::TextColored(ImVec4(0.70f, 0.85f, 1.f, 1.f), "Metrics");
     ImGui::Separator();
     ImGui::Spacing();
-    ImGui::Text("Search time:  %.2f ms", multiAgentsSeqMetrics.search_time);
-    ImGui::Text("Path length:  %zu", multiAgentsSeqMetrics.path_size);
+    ImGui::Text("Path found:     %s", metrics_.path_found ? "yes" : "no");
+    ImGui::Text("Path length:    %zu", metrics_.path_size);
+    if (game_mode_ == GameMode::kSinglePathfinding)
+    {
+        ImGui::Text("Nodes expanded: %zu", metrics_.nodes_expanded);
+    }
+    ImGui::Text("Search time:    %.2f ms", metrics_.search_time);
 
     ImGui::End();
 
@@ -377,6 +411,10 @@ void Game::draw()
 
 void Game::drawAgents()
 {
+    if (game_mode_ == GameMode::kMultiPathfinding)
+    {
+        return;
+    }
     for (auto& agent : agents_)
     {
         drawAgent(*agent);
@@ -509,6 +547,14 @@ void Game::runAlgorithm()
         agents_.push_back(std::make_unique<Agent>(
             start_cell_, goal_cell_, grid_, sf::Color::Blue, record_search_snapshots_));
     }
+    else
+    {
+        const int n = std::clamp(multi_agent_count_, 1, kMaxMultiAgents);
+        if (agents_.size() != static_cast<std::size_t>(n))
+        {
+            initAgents();
+        }
+    }
 
     auto start = std::chrono::high_resolution_clock::now();
     switch (parallel_strategy_)
@@ -518,7 +564,6 @@ void Game::runAlgorithm()
             for (auto& agent : agents_)
             {
                 runAlgorithmOnAgent(agent.get(), algorithm_);
-                multiAgentsSeqMetrics.path_size = agent->path_.size();
             }
             break;
         }
@@ -529,10 +574,6 @@ void Game::runAlgorithm()
             for (int i = 0; i < static_cast<int>(agents_.size()); ++i)
             {
                 this->runAlgorithmOnAgent(agents_[i].get(), algorithm_);
-            }
-            if (!agents_.empty())
-            {
-                multiAgentsSeqMetrics.path_size = agents_.back()->path_.size();
             }
             break;
         }
@@ -553,17 +594,35 @@ void Game::runAlgorithm()
             {
                 t.join();
             }
-            if (!agents_.empty())
-            {
-                multiAgentsSeqMetrics.path_size = agents_.back()->path_.size();
-            }
             break;
         }
     }
     auto end = std::chrono::high_resolution_clock::now();
 
 
-    multiAgentsSeqMetrics.search_time = std::chrono::duration<double, std::milli>(end - start).count();
+    metrics_.search_time = std::chrono::duration<double, std::milli>(end - start).count();
+
+    if (!agents_.empty())
+    {
+        if (game_mode_ == GameMode::kSinglePathfinding)
+        {
+            const Agent& a = *agents_.front();
+            metrics_.path_size = a.path_.size();
+            metrics_.nodes_expanded = a.metrics_.nodes_expanded;
+            metrics_.path_found = a.metrics_.path_found;
+        }
+        else
+        {
+            std::size_t total_nodes = 0;
+            for (const auto& ag : agents_)
+            {
+                total_nodes += ag->metrics_.nodes_expanded;
+            }
+            metrics_.nodes_expanded = total_nodes;
+            metrics_.path_found = agents_.front()->metrics_.path_found;
+            metrics_.path_size = agents_.front()->path_.size();
+        }
+    }
 }
 
 void Game::runAlgorithmOnAgent(Agent* agent, Algorithm algorithm)
@@ -772,12 +831,22 @@ void Game::reset()
         }
     }
 
-    agents_.clear();
-
-    if (game_mode_ == GameMode::kMultiPathfinding)
+    const int agentCount = static_cast<int>(agents_.size());
+    if (agentCount > 0)
     {
-        initAgents();
+        #pragma omp parallel for schedule(static) if(agentCount > 256)
+        for (int i = 0; i < agentCount; ++i)
+        {
+            if (agents_[static_cast<std::size_t>(i)])
+            {
+                agents_[static_cast<std::size_t>(i)]->clearSearchState();
+            }
+        }
     }
+    agents_.clear();
+    agents_.shrink_to_fit();
+
+    metrics_ = {};
 
     start_cell_ = nullptr;
     goal_cell_ = nullptr;
