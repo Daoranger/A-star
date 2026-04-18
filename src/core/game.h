@@ -82,6 +82,7 @@ private:
     void selectCell(int row, int col);
     void deselectCell(int row, int col);
     void reset();
+    void renderImGuiPanels();
 
     Cell* start_cell_ = nullptr;
     Cell* goal_cell_ = nullptr;
@@ -104,8 +105,9 @@ private:
     ParallelStrategy parallel_strategy_ = ParallelStrategy::kOpenMP;
     Algorithm algorithm_ = Algorithm::kAStar;
     bool is_dragging_ = false;
+    bool show_pathfinding_panel_ = true;
 
-};
+};      
 
 
 #endif  // PATHFINDING_GAME_H

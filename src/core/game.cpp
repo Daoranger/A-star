@@ -1,5 +1,6 @@
 #include "../core/game.h"
 
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <future>
@@ -64,55 +65,6 @@ void Game::processEvents()
             onMouseClick(*mouseButtonPressedEvent, localPos);
         }
 
-        // Keyboard Keys Pressed Events
-        if (const auto* keyPressedEvent = event->getIf<sf::Event::KeyPressed>())
-        {
-            if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num1)
-            {
-                input_mode_ = InputMode::kSelecting;
-            }
-            else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num2)
-            {
-                input_mode_ = InputMode::kDeselecting;
-            }
-            else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num3)
-            {
-                if (app_state_ == AppState::kIdle)
-                {
-                    if ((game_mode_ == GameMode::kSinglePathfinding && placement_state_ == PlacementState::kPlacingObstacles) || game_mode_ == GameMode::kMultiPathfinding)
-                    {
-                        runAlgorithm();
-                        app_state_ = AppState::kAnimating;
-                    }
-                }
-            }
-            else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num4)
-            {
-                reset();
-            }
-            else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num5)
-            {
-                // Save Grid
-                saveGridToFile();
-            }
-            else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Num6)
-            {
-                loadGridFromFile();
-            }
-            else if (keyPressedEvent->scancode == sf::Keyboard::Scancode::Tab)
-            {
-                if (game_mode_ == GameMode::kSinglePathfinding)
-                {
-                    game_mode_ = GameMode::kMultiPathfinding;
-                }
-                else
-                {
-                    game_mode_ = GameMode::kSinglePathfinding;
-                }
-                reset();
-            }
-        }
-
         // Mouse Button Released Event
         if (const auto* mouseButtonReleasedEvent = event->getIf<sf::Event::MouseButtonReleased>())
         {
@@ -160,7 +112,11 @@ void Game::update()
             bool all_done = true;
             for (auto& agent : agents_)
             {
-                if (agent->snapshot_index_ < agent->snapshots_.size() - 1)
+                if (agent->snapshots_.empty())
+                {
+                    continue;
+                }
+                if (agent->snapshot_index_ < static_cast<int>(agent->snapshots_.size()) - 1)
                 {
                     agent->snapshot_index_++;
                     all_done = false;
@@ -173,26 +129,209 @@ void Game::update()
     }
 
     ImGui::SFML::Update(window_, imgui_clock_.restart());
-    ImGui::SetNextWindowSize(ImVec2(330, 230), ImGuiCond_FirstUseEver);
-    ImGui::Begin("Metrics");
-    ImGui::SetWindowFontScale(2.0f);
-    ImGui::Text("Search Time: %.2f ms", multiAgentsSeqMetrics.search_time);
-    //ImGui::Text("Path Found: %s", agent->metrics_.path_found ? "Yes" : "No");
-    ImGui::Text("Path Length: %zu", multiAgentsSeqMetrics.path_size);
-    //ImGui::Text("Nodes Expanded: %zu", agent->metrics_.nodes_expanded);
-    static constexpr std::array<const char*, 5> kAlgorithmLabels = { "A*", "Dijkstra", "Greedy", "BFS", "DFS" };
+    renderImGuiPanels();
+}
+
+void Game::renderImGuiPanels()
+{
+    ImGuiIO& io = ImGui::GetIO();
+    // repeat=false: OS key-repeat would otherwise toggle every repeat tick while F1 is held.
+    if (ImGui::IsKeyPressed(ImGuiKey_F1, false))
+    {
+        show_pathfinding_panel_ = !show_pathfinding_panel_;
+    }
+
+    const float edgeMargin = 16.f;
+
+    if (!show_pathfinding_panel_)
+    {
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - edgeMargin, io.DisplaySize.y * 0.5f),
+                                ImGuiCond_Always, ImVec2(1.f, 0.5f));
+        ImGui::SetNextWindowSize(ImVec2(48.f, 112.f));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.f);
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.10f, 0.12f, 0.16f, 0.92f));
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.18f, 0.42f, 0.72f, 1.f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.24f, 0.52f, 0.88f, 1.f));
+        ImGui::Begin("##panel_toggle", nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar
+                         | ImGuiWindowFlags_NoMove);
+        ImGui::SetWindowFontScale(1.5f);
+        if (ImGui::Button("<<", ImVec2(36.f, 96.f)))
+        {
+            show_pathfinding_panel_ = true;
+        }
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Show panel (F1)");
+        }
+        ImGui::End();
+        ImGui::PopStyleColor(3);
+        ImGui::PopStyleVar();
+        return;
+    }
+
+    ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - edgeMargin, edgeMargin), ImGuiCond_Always,
+                            ImVec2(1.f, 0.f));
+    {
+        const float panelW = 480.f;
+        const float panelH = std::max(420.f, io.DisplaySize.y - 2.f * edgeMargin);
+        ImGui::SetNextWindowSize(ImVec2(panelW, panelH), ImGuiCond_FirstUseEver);
+    }
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.f);
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(26, 22));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(12, 14));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(14, 10));
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.07f, 0.08f, 0.11f, 0.96f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.28f, 0.50f, 0.78f, 0.45f));
+    ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0.10f, 0.22f, 0.38f, 1.f));
+    ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0.14f, 0.36f, 0.62f, 1.f));
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.18f, 0.42f, 0.72f, 1.f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.24f, 0.52f, 0.88f, 1.f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.12f, 0.32f, 0.55f, 1.f));
+    ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.16f, 0.30f, 0.48f, 0.65f));
+    ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.22f, 0.40f, 0.62f, 0.85f));
+    ImGui::PushStyleColor(ImGuiCol_Separator, ImVec4(0.35f, 0.48f, 0.65f, 0.45f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.12f, 0.14f, 0.20f, 1.f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.16f, 0.20f, 0.28f, 1.f));
+
+    ImGui::Begin("Pathfinding", nullptr, ImGuiWindowFlags_NoMove);
+
+    ImGui::SetWindowFontScale(1.6f);
+
+    if (ImGui::Button("Hide panel", ImVec2(-1.f, 44.f)))
+    {
+        show_pathfinding_panel_ = false;
+    }
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::SetTooltip("Or press F1");
+    }
+    ImGui::TextDisabled("F1: show / hide panel");
+    ImGui::Spacing();
+
+    ImGui::TextColored(ImVec4(0.70f, 0.85f, 1.f, 1.f), "Scene");
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    int modePick = (game_mode_ == GameMode::kSinglePathfinding) ? 0 : 1;
+    ImGui::RadioButton("Single agent", &modePick, 0);
+    ImGui::SameLine();
+    ImGui::RadioButton("Multi agent", &modePick, 1);
+    if (modePick == 0 && game_mode_ != GameMode::kSinglePathfinding)
+    {
+        game_mode_ = GameMode::kSinglePathfinding;
+        reset();
+    }
+    else if (modePick == 1 && game_mode_ != GameMode::kMultiPathfinding)
+    {
+        game_mode_ = GameMode::kMultiPathfinding;
+        reset();
+    }
+
+    ImGui::Spacing();
+    int brushPick = (input_mode_ == InputMode::kSelecting) ? 0 : 1;
+    ImGui::TextUnformatted("Brush");
+    ImGui::RadioButton("Paint##brush", &brushPick, 0);
+    ImGui::SameLine();
+    ImGui::RadioButton("Erase##brush", &brushPick, 1);
+    if (brushPick == 0 && input_mode_ != InputMode::kSelecting)
+    {
+        input_mode_ = InputMode::kSelecting;
+    }
+    else if (brushPick == 1 && input_mode_ != InputMode::kDeselecting)
+    {
+        input_mode_ = InputMode::kDeselecting;
+    }
+
+    if (game_mode_ == GameMode::kSinglePathfinding)
+    {
+        ImGui::Spacing();
+        const char* hint = placement_state_ == PlacementState::kNeedsStart
+            ? "Next: click to place the start cell."
+            : placement_state_ == PlacementState::kNeedsGoal
+                  ? "Next: click to place the goal cell."
+                  : "Paint obstacles; drag to paint many cells.";
+        ImGui::TextWrapped("%s", hint);
+    }
+
+    ImGui::Spacing();
+    ImGui::TextColored(ImVec4(0.70f, 0.85f, 1.f, 1.f), "Actions");
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    const bool canRun = app_state_ == AppState::kIdle
+        && ((game_mode_ == GameMode::kSinglePathfinding
+                && placement_state_ == PlacementState::kPlacingObstacles)
+            || game_mode_ == GameMode::kMultiPathfinding);
+
+    ImGui::BeginDisabled(!canRun);
+    if (ImGui::Button("Run search", ImVec2(-1.f, 50.f)))
+    {
+        runAlgorithm();
+        app_state_ = AppState::kAnimating;
+    }
+    ImGui::EndDisabled();
+    if (!canRun && app_state_ == AppState::kIdle && game_mode_ == GameMode::kSinglePathfinding)
+    {
+        ImGui::TextDisabled("Place start, then goal, before running.");
+    }
+
+    if (ImGui::Button("Reset", ImVec2(-1.f, 42.f)))
+    {
+        reset();
+    }
+
+    ImGui::Spacing();
+    if (ImGui::Button("Save grid to Grid.txt", ImVec2(-1.f, 32.f)))
+    {
+        saveGridToFile();
+    }
+    if (ImGui::Button("Load grid from Grid.txt", ImVec2(-1.f, 40.f)))
+    {
+        loadGridFromFile();
+    }
+
+    ImGui::Spacing();
+    ImGui::TextColored(ImVec4(0.70f, 0.85f, 1.f, 1.f), "Algorithm");
+    ImGui::Separator();
+    ImGui::Spacing();
+    ImGui::PushItemWidth(-1.f);
+    static constexpr std::array<const char*, 5> kAlgorithmLabels = {
+        "A*", "Dijkstra", "Greedy", "BFS", "DFS"
+    };
     int algoIndex = static_cast<int>(algorithm_);
-    ImGui::Combo("Algorithm", &algoIndex, kAlgorithmLabels.data(), static_cast<int>(kAlgorithmLabels.size()));
+    ImGui::Combo("##algo", &algoIndex, kAlgorithmLabels.data(), static_cast<int>(kAlgorithmLabels.size()));
     algorithm_ = static_cast<Algorithm>(algoIndex);
+    ImGui::PopItemWidth();
+
+    ImGui::Spacing();
+    ImGui::TextColored(ImVec4(0.70f, 0.85f, 1.f, 1.f), "Parallel strategy");
+    ImGui::Separator();
+    ImGui::Spacing();
+    ImGui::PushItemWidth(-1.f);
     static constexpr std::array<const char*, 3> kParallelLabels = {
         "Sequential", "Per-agent thread", "OpenMP"
     };
     int parallelIndex = static_cast<int>(parallel_strategy_);
-    ImGui::Combo("Parallel strategy", &parallelIndex, kParallelLabels.data(),
+    ImGui::Combo("##par", &parallelIndex, kParallelLabels.data(),
                  static_cast<int>(kParallelLabels.size()));
     parallel_strategy_ = static_cast<ParallelStrategy>(parallelIndex);
+    ImGui::PopItemWidth();
+
+    ImGui::Spacing();
+    ImGui::TextColored(ImVec4(0.70f, 0.85f, 1.f, 1.f), "Last run");
     ImGui::Separator();
+    ImGui::Spacing();
+    ImGui::Text("Search time:  %.2f ms", multiAgentsSeqMetrics.search_time);
+    ImGui::Text("Path length:  %zu", multiAgentsSeqMetrics.path_size);
+
     ImGui::End();
+
+    ImGui::PopStyleColor(12);
+    ImGui::PopStyleVar(6);
 }
 
 void Game::draw()
@@ -261,7 +400,7 @@ void Game::drawAgent(Agent& agent)
         }
         case AppState::kDone:
         {
-            if (agent.snapshots_.empty()) return;
+            if (agent.path_.empty()) return;
             color.a = 150;
             overlay.setFillColor(color);
             for (Cell* cell : agent.path_)
@@ -418,10 +557,9 @@ void Game::runAlgorithmOnAgent(Agent* agent, Algorithm algorithm)
 
 void Game::initAgents()
 {
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < 10000; i++)
     {
         agents_.push_back(std::make_unique<Agent>(&grid_.cells_[0][0], &grid_.cells_[49][49], grid_, sf::Color::Red));
-        agents_.push_back(std::make_unique<Agent>(&grid_.cells_[0][49], &grid_.cells_[49][0], grid_, sf::Color::Blue));
     }
 }
 
