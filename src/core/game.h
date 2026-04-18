@@ -53,7 +53,8 @@ enum class Algorithm
     kDijkstra,
     kGreedy,
     kBFS,
-    kDFS
+    kDFS,
+    kBidirectionalAStar,
 };
 
 class Game

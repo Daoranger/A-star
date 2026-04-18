@@ -51,6 +51,9 @@ public:
     void runBFS();
     void runDFS();
 
+    /// Bidirectional A* (BA*)
+    void runBidirectionalAStar();
+
     /// Drop path, snapshots, and search maps so bulk teardown (e.g. Reset) stays fast.
     void clearSearchState() noexcept;
 

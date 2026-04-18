@@ -18,7 +18,7 @@
 Game::Game()
     : window_(sf::VideoMode( { 1200, 700 } ), "A* Pathfinding")
     , view_(sf::FloatRect(sf::Vector2f(0, 0), sf::Vector2f(window_.getPosition().x, window_.getPosition().y)))
-    , grid_(60, 60, 50)
+    , grid_(50, 50, 50)
 {
     window_.setView(view_);
     ImGui::SFML::Init(window_);
@@ -360,8 +360,8 @@ void Game::renderImGuiPanels()
     ImGui::Separator();
     ImGui::Spacing();
     ImGui::PushItemWidth(-1.f);
-    static constexpr std::array<const char*, 5> kAlgorithmLabels = {
-        "A*", "Dijkstra", "Greedy", "BFS", "DFS"
+    static constexpr std::array<const char*, 6> kAlgorithmLabels = {
+        "A*", "Dijkstra", "Greedy", "BFS", "DFS", "BA*"
     };
     int algoIndex = static_cast<int>(algorithm_);
     ImGui::Combo("##algo", &algoIndex, kAlgorithmLabels.data(), static_cast<int>(kAlgorithmLabels.size()));
@@ -643,6 +643,9 @@ void Game::runAlgorithmOnAgent(Agent* agent, Algorithm algorithm)
             break;
         case Algorithm::kDFS:
             agent->runDFS();
+            break;
+        case Algorithm::kBidirectionalAStar:
+            agent->runBidirectionalAStar();
             break;
     }
 }
