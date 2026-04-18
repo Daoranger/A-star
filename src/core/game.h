@@ -107,6 +107,10 @@ private:
     bool is_dragging_ = false;
     bool show_pathfinding_panel_ = true;
 
+    static constexpr int kMaxMultiAgents = 256;
+    int multi_agent_count_ = 2;
+    bool record_search_snapshots_ = true;
+
 };      
 
 

@@ -17,7 +17,7 @@
 Game::Game()
     : window_(sf::VideoMode( { 1200, 700 } ), "A* Pathfinding")
     , view_(sf::FloatRect(sf::Vector2f(0, 0), sf::Vector2f(window_.getPosition().x, window_.getPosition().y)))
-    , grid_(50, 50, 50)
+    , grid_(60, 60, 50)
 {
     window_.setView(view_);
     ImGui::SFML::Init(window_);
@@ -229,6 +229,38 @@ void Game::renderImGuiPanels()
     {
         game_mode_ = GameMode::kMultiPathfinding;
         reset();
+    }
+
+    if (game_mode_ == GameMode::kMultiPathfinding)
+    {
+        ImGui::Spacing();
+        ImGui::TextUnformatted("Multi-agent");
+        ImGui::PushItemWidth(-1.f);
+        const int prevCount = multi_agent_count_;
+        int countEdit = multi_agent_count_;
+        ImGui::InputInt("Agent count", &countEdit, 1, 4);
+        multi_agent_count_ = std::clamp(countEdit, 1, kMaxMultiAgents);
+        ImGui::PopItemWidth();
+        ImGui::TextDisabled("Same start/goal for every agent (corner to corner).");
+        if (prevCount != multi_agent_count_ && app_state_ == AppState::kIdle)
+        {
+            agents_.clear();
+            initAgents();
+        }
+    }
+
+    ImGui::Spacing();
+    const bool prevSnapshots = record_search_snapshots_;
+    ImGui::Checkbox("Record search snapshots", &record_search_snapshots_);
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::SetTooltip("Stores frontier/explored each step for animation. Off = faster (path only).");
+    }
+    if (prevSnapshots != record_search_snapshots_ && game_mode_ == GameMode::kMultiPathfinding
+        && app_state_ == AppState::kIdle)
+    {
+        agents_.clear();
+        initAgents();
     }
 
     ImGui::Spacing();
@@ -474,7 +506,8 @@ void Game::runAlgorithm()
     {
         if (placement_state_ != PlacementState::kPlacingObstacles) return;
         agents_.clear();
-        agents_.push_back(std::make_unique<Agent>(start_cell_, goal_cell_, grid_, sf::Color::Blue));
+        agents_.push_back(std::make_unique<Agent>(
+            start_cell_, goal_cell_, grid_, sf::Color::Blue, record_search_snapshots_));
     }
 
     auto start = std::chrono::high_resolution_clock::now();
@@ -557,9 +590,18 @@ void Game::runAlgorithmOnAgent(Agent* agent, Algorithm algorithm)
 
 void Game::initAgents()
 {
-    for (int i = 0; i < 10000; i++)
+    agents_.clear();
+    const int n = std::clamp(multi_agent_count_, 1, kMaxMultiAgents);
+    const int lastRow = grid_.getRows() - 1;
+    const int lastCol = grid_.getCols() - 1;
+    for (int i = 0; i < n; ++i)
     {
-        agents_.push_back(std::make_unique<Agent>(&grid_.cells_[0][0], &grid_.cells_[49][49], grid_, sf::Color::Red));
+        agents_.push_back(std::make_unique<Agent>(
+            &grid_.cells_[0][0],
+            &grid_.cells_[lastRow][lastCol],
+            grid_,
+            sf::Color::Red,
+            record_search_snapshots_));
     }
 }
 

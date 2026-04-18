@@ -8,16 +8,21 @@
 
 #include "../grid/grid.h"
 
-Agent::Agent(Cell* start_cell, Cell* goal_cell, const Grid& grid, sf::Color color)
+Agent::Agent(Cell* start_cell, Cell* goal_cell, const Grid& grid, sf::Color color, bool record_search_snapshots)
     : start_cell_(start_cell)
     , goal_cell_(goal_cell)
     , grid_(grid)
     , color_(color)
+    , record_search_snapshots_(record_search_snapshots)
 {
 }
 
 void Agent::runAStar()
 {
+    snapshots_.clear();
+    snapshot_index_ = 0;
+    path_.clear();
+
     Snapshot snapshot;
     std::set<Cell*, CompareCell> openSet(CompareCell{f_});
     std::unordered_set<Cell*> closedSet;
@@ -31,9 +36,12 @@ void Agent::runAStar()
 
     // add start cell to openList
     openSet.insert(start_cell_);
-    snapshot.frontier_ = extractNodes(openSet);
-    snapshot.explored_ = extractNodes(closedSet);
-    snapshots_.push_back(snapshot);
+    if (record_search_snapshots_)
+    {
+        snapshot.frontier_ = extractNodes(openSet);
+        snapshot.explored_ = extractNodes(closedSet);
+        snapshots_.push_back(snapshot);
+    }
 
     // processing current cell in open set
     while (!openSet.empty())
@@ -64,9 +72,12 @@ void Agent::runAStar()
         // add current cell to closedList
         closedSet.insert(currCell);
 
-        snapshot.frontier_ = extractNodes(openSet);
-        snapshot.explored_ = extractNodes(closedSet);
-        snapshots_.push_back(snapshot);
+        if (record_search_snapshots_)
+        {
+            snapshot.frontier_ = extractNodes(openSet);
+            snapshot.explored_ = extractNodes(closedSet);
+            snapshots_.push_back(snapshot);
+        }
 
         // for each neighbor of current cell
         for (auto& n : getValidNeighbors(*currCell))
@@ -104,6 +115,10 @@ void Agent::runAStar()
 
 void Agent::runDijkstra()
 {
+    snapshots_.clear();
+    snapshot_index_ = 0;
+    path_.clear();
+
     Snapshot snapshot;
     std::set<Cell*, CompareCell> openSet(CompareCell{f_});
     std::unordered_set<Cell*> closedSet;
@@ -116,9 +131,12 @@ void Agent::runDijkstra()
 
     // add start cell to openList
     openSet.insert(start_cell_);
-    snapshot.frontier_ = extractNodes(openSet);
-    snapshot.explored_ = extractNodes(closedSet);
-    snapshots_.push_back(snapshot);
+    if (record_search_snapshots_)
+    {
+        snapshot.frontier_ = extractNodes(openSet);
+        snapshot.explored_ = extractNodes(closedSet);
+        snapshots_.push_back(snapshot);
+    }
 
     // processing current cell in open set
     while (!openSet.empty())
@@ -149,9 +167,12 @@ void Agent::runDijkstra()
         // add current cell to closedList
         closedSet.insert(currCell);
 
-        snapshot.frontier_ = extractNodes(openSet);
-        snapshot.explored_ = extractNodes(closedSet);
-        snapshots_.push_back(snapshot);
+        if (record_search_snapshots_)
+        {
+            snapshot.frontier_ = extractNodes(openSet);
+            snapshot.explored_ = extractNodes(closedSet);
+            snapshots_.push_back(snapshot);
+        }
 
         // for each neighbor of current cell
         for (auto& n : getValidNeighbors(*currCell))
@@ -188,6 +209,10 @@ void Agent::runDijkstra()
 
 void Agent::runGreedy()
 {
+    snapshots_.clear();
+    snapshot_index_ = 0;
+    path_.clear();
+
     Snapshot snapshot;
     std::set<Cell*, CompareCell> openSet(CompareCell{f_});
     std::unordered_set<Cell*> closedSet;
@@ -200,9 +225,12 @@ void Agent::runGreedy()
 
     // add start cell to openList
     openSet.insert(start_cell_);
-    snapshot.frontier_ = extractNodes(openSet);
-    snapshot.explored_ = extractNodes(closedSet);
-    snapshots_.push_back(snapshot);
+    if (record_search_snapshots_)
+    {
+        snapshot.frontier_ = extractNodes(openSet);
+        snapshot.explored_ = extractNodes(closedSet);
+        snapshots_.push_back(snapshot);
+    }
 
     // processing current cell in open set
     while (!openSet.empty())
@@ -233,9 +261,12 @@ void Agent::runGreedy()
         // add current cell to closedList
         closedSet.insert(currCell);
 
-        snapshot.frontier_ = extractNodes(openSet);
-        snapshot.explored_ = extractNodes(closedSet);
-        snapshots_.push_back(snapshot);
+        if (record_search_snapshots_)
+        {
+            snapshot.frontier_ = extractNodes(openSet);
+            snapshot.explored_ = extractNodes(closedSet);
+            snapshots_.push_back(snapshot);
+        }
 
         // for each neighbor of current cell
         for (auto& n : getValidNeighbors(*currCell))
@@ -267,6 +298,10 @@ void Agent::runGreedy()
 
 void Agent::runBFS()
 {
+    snapshots_.clear();
+    snapshot_index_ = 0;
+    path_.clear();
+
     Snapshot snapshot;
     std::deque<Cell*> openDeque;
     std::unordered_set<Cell*> visitedSet;
@@ -276,9 +311,12 @@ void Agent::runBFS()
     openDeque.push_back(start_cell_);
     visitedSet.insert(start_cell_);
 
-    snapshot.frontier_ = extractNodes(openDeque);
-    snapshot.explored_ = extractNodes(visitedSet);
-    snapshots_.push_back(snapshot);
+    if (record_search_snapshots_)
+    {
+        snapshot.frontier_ = extractNodes(openDeque);
+        snapshot.explored_ = extractNodes(visitedSet);
+        snapshots_.push_back(snapshot);
+    }
 
     // processing current cell in open set
     while (!openDeque.empty())
@@ -321,9 +359,12 @@ void Agent::runBFS()
         }
 
         // take Snapshot AFTER adding neighbors
-        snapshot.frontier_ = extractNodes(openDeque);
-        snapshot.explored_ = extractNodes(visitedSet);
-        snapshots_.push_back(snapshot);
+        if (record_search_snapshots_)
+        {
+            snapshot.frontier_ = extractNodes(openDeque);
+            snapshot.explored_ = extractNodes(visitedSet);
+            snapshots_.push_back(snapshot);
+        }
     }
 
     // no path found
@@ -332,6 +373,10 @@ void Agent::runBFS()
 
 void Agent::runDFS()
 {
+    snapshots_.clear();
+    snapshot_index_ = 0;
+    path_.clear();
+
     Snapshot snapshot;
     std::deque<Cell*> openDeque;
     std::unordered_set<Cell*> visitedSet;
@@ -341,9 +386,12 @@ void Agent::runDFS()
     openDeque.push_back(start_cell_);
     visitedSet.insert(start_cell_);
 
-    snapshot.frontier_ = extractNodes(openDeque);
-    snapshot.explored_ = extractNodes(visitedSet);
-    snapshots_.push_back(snapshot);
+    if (record_search_snapshots_)
+    {
+        snapshot.frontier_ = extractNodes(openDeque);
+        snapshot.explored_ = extractNodes(visitedSet);
+        snapshots_.push_back(snapshot);
+    }
 
     // processing current cell in open set
     while (!openDeque.empty())
@@ -386,9 +434,12 @@ void Agent::runDFS()
         }
 
         // take Snapshot AFTER adding neighbors
-        snapshot.frontier_ = extractNodes(openDeque);
-        snapshot.explored_ = extractNodes(visitedSet);
-        snapshots_.push_back(snapshot);
+        if (record_search_snapshots_)
+        {
+            snapshot.frontier_ = extractNodes(openDeque);
+            snapshot.explored_ = extractNodes(visitedSet);
+            snapshots_.push_back(snapshot);
+        }
     }
 
     // no path found

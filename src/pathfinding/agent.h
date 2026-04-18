@@ -43,7 +43,8 @@ class Agent
 
 public:
 
-    Agent(Cell* start_cell, Cell* goal_cell, const Grid& grid, sf::Color color);
+    Agent(Cell* start_cell, Cell* goal_cell, const Grid& grid, sf::Color color,
+          bool record_search_snapshots = true);
     void runAStar();
     void runDijkstra();
     void runGreedy();
@@ -81,6 +82,8 @@ private:
     sf::Color color_;
     Cell* start_cell_;
     Cell* goal_cell_;
+
+    bool record_search_snapshots_;
 
     std::unordered_map<Cell*, double> g_;
     std::unordered_map<Cell*, double> f_;
