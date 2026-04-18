@@ -173,7 +173,7 @@ void Game::update()
     }
 
     ImGui::SFML::Update(window_, imgui_clock_.restart());
-    ImGui::SetNextWindowSize(ImVec2(330, 170), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(330, 230), ImGuiCond_FirstUseEver);
     ImGui::Begin("Metrics");
     ImGui::SetWindowFontScale(2.0f);
     ImGui::Text("Search Time: %.2f ms", multiAgentsSeqMetrics.search_time);
@@ -184,6 +184,13 @@ void Game::update()
     int algoIndex = static_cast<int>(algorithm_);
     ImGui::Combo("Algorithm", &algoIndex, kAlgorithmLabels.data(), static_cast<int>(kAlgorithmLabels.size()));
     algorithm_ = static_cast<Algorithm>(algoIndex);
+    static constexpr std::array<const char*, 3> kParallelLabels = {
+        "Sequential", "Per-agent thread", "OpenMP"
+    };
+    int parallelIndex = static_cast<int>(parallel_strategy_);
+    ImGui::Combo("Parallel strategy", &parallelIndex, kParallelLabels.data(),
+                 static_cast<int>(kParallelLabels.size()));
+    parallel_strategy_ = static_cast<ParallelStrategy>(parallelIndex);
     ImGui::Separator();
     ImGui::End();
 }
