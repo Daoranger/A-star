@@ -421,7 +421,7 @@ void Game::drawAgents()
 {
     if (game_mode_ == GameMode::kMultiPathfinding)
     {
-        return;
+        //return;
     }
     for (auto& agent : agents_)
     {
@@ -482,6 +482,25 @@ void Game::drawAgent(Agent& agent)
             color.a = 150;
             overlay.setFillColor(color);
             for (Cell* cell : agent.path_)
+            {
+                overlay.setPosition(sf::Vector2f(cell->x_ * grid_.getCellSize(), cell->y_ * grid_.getCellSize()) + offset);
+                window_.draw(overlay);
+            }
+
+            if (agent.snapshots_.empty()) return;
+            Snapshot& snapshot = agent.snapshots_[agent.snapshots_.size() - 1];
+
+            color.a = 128;
+            overlay.setFillColor(color);
+            for (Cell* cell : snapshot.frontier_)
+            {
+                overlay.setPosition(sf::Vector2f(cell->x_ * grid_.getCellSize(), cell->y_ * grid_.getCellSize()) + offset);
+                window_.draw(overlay);
+            }
+
+            color.a = 64;
+            overlay.setFillColor(color);
+            for (Cell* cell : snapshot.explored_)
             {
                 overlay.setPosition(sf::Vector2f(cell->x_ * grid_.getCellSize(), cell->y_ * grid_.getCellSize()) + offset);
                 window_.draw(overlay);
@@ -668,8 +687,8 @@ void Game::initAgents()
     for (int i = 0; i < n; ++i)
     {
         agents_.push_back(std::make_unique<Agent>(
-            &grid_.cells_[0][0],
-            &grid_.cells_[lastRow][lastCol],
+            &grid_.cells_[0][lastCol],
+            &grid_.cells_[lastRow][0],
             grid_,
             sf::Color::Red,
             record_search_snapshots_));
