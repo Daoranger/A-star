@@ -45,6 +45,7 @@ private:
     void tagObstaclesInRange(const std::vector<std::unique_ptr<Obstacle>>& obstacles, float range);
     void createFeelers();
     sf::Vector2f rotateVector(const sf::Vector2f& vector, float angleDegrees);
+    sf::Vector2f getHidingPositions(const sf::Vector2f& obstaclePos, const float obstacleRadius, const sf::Vector2f& targetPos);
 };
 
 #endif //STEERINGBEHAVIORS_STEERINGBEHAVIORS_H

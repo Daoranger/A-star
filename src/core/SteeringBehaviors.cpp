@@ -14,7 +14,12 @@ SteeringBehaviors::SteeringBehaviors(Vehicle& vehicle)
 
 sf::Vector2f SteeringBehaviors::seek(sf::Vector2f target) const
 {
-    sf::Vector2f desired_velocity = (target - vehicle_.position).normalized() * vehicle_.maxSpeed;
+    sf::Vector2f to_target = target - vehicle_.position;
+
+    if (to_target.lengthSquared() < 0.0001f) // avoid normalizing a zero vector
+        return -vehicle_.velocity;
+
+    sf::Vector2f desired_velocity = to_target.normalized() * vehicle_.maxSpeed;
     return desired_velocity - vehicle_.velocity;
 }
 
@@ -205,6 +210,32 @@ sf::Vector2f SteeringBehaviors::wallAvoidance(const std::vector<std::unique_ptr<
     return steeringForce;
 }
 
+sf::Vector2f SteeringBehaviors::interpose(const Vehicle &agentA, const Vehicle &agentB)
+{
+    float midPointX = (agentA.position.x + agentB.position.x) / 2.0;
+    float midPointY = (agentA.position.y + agentB.position.y) / 2.0;
+    sf::Vector2f midPoint = sf::Vector2f(midPointX, midPointY);
+
+    // distance from vehicle to mid-point
+    float dtmpX = (vehicle_.position.x - midPoint.x);
+    float dtmpY = (vehicle_.position.y - midPoint.y);
+    float distanceToMidPoint = sqrtf( (dtmpX * dtmpX) + (dtmpY * dtmpY) );
+
+    // time to reach mid-point
+    float timeToReachMidPoint = distanceToMidPoint / vehicle_.maxSpeed;
+
+    // agents A and B future positions
+    sf::Vector2f AFuturePos = agentA.position + agentA.velocity * timeToReachMidPoint;
+    sf::Vector2f BFuturePos = agentB.position + agentB.velocity * timeToReachMidPoint;
+
+    // calculate mid-point between A and B
+    sf::Vector2f AtoB = AFuturePos + BFuturePos;
+    midPoint = sf::Vector2f(AtoB.x / 2.0f, AtoB.y / 2.0f);
+
+    // we can do arrive or seek here
+    return seek(midPoint);
+}
+
 sf::Vector2f SteeringBehaviors::pointToWorldSpace(sf::Vector2f targetLocal)
 {
     sf::Vector2f heading = vehicle_.heading();
@@ -312,4 +343,18 @@ sf::Vector2f SteeringBehaviors::rotateVector(const sf::Vector2f& vector, float a
     float y = vector.x * sin(angleRadians) + vector.y * cos(angleRadians);
 
     return sf::Vector2f{x, y};
+}
+
+sf::Vector2f SteeringBehaviors::getHidingPositions(const sf::Vector2f &obstaclePos, const float obstacleRadius,
+    const sf::Vector2f &targetPos)
+{
+    // calculate how far away the agent is to be from the chosen obstacle’s bounding radius
+    const float distanceFromBoundary = 30.0f;
+    float distanceAway = obstacleRadius + distanceFromBoundary;
+
+    // calculate the heading toward the object from target
+    sf::Vector2f targetToObstacle = (obstaclePos - targetPos).normalized();
+    
+
+
 }

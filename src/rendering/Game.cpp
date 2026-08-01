@@ -9,10 +9,9 @@
 Game::Game()
     : window(sf::VideoMode(sf::Vector2u(3072, 1920)), "Steering Behaviors")
     , vehicle1(sf::Vector2f(300, 540))
-    , vehicle2(sf::Vector2f(1800, 100))
+    , vehicle2(sf::Vector2f(100, 100))
+    , vehicle3(sf::Vector2f(300, 1080))
 {
-    vehicle1.maxSpeed = 300;
-    vehicle2.maxSpeed = 200;
 
     spawnObstacles(3);
 
@@ -67,15 +66,22 @@ void Game::update()
     float dt = clock.restart().asSeconds();
     sf::Vector2f target = sf::Vector2f(sf::Mouse::getPosition(window));
 
+    // V1
     sf::Vector2f steeringForceV1 = sf::Vector2f(100,0);
 
+    // V2
     sf::Vector2f seekForce = vehicle2.steeringBehaviors.seek(target);
     sf::Vector2f wallAvoidForce = vehicle2.steeringBehaviors.wallAvoidance(walls);
     sf::Vector2f obstacleAvoidForce = vehicle2.steeringBehaviors.obstacleAvoidance(obstacles);
-    sf::Vector2f steeringForceV2 = seekForce + wallAvoidForce * 1.5f + obstacleAvoidForce * 1.5f;
+    sf::Vector2f interposeForce = vehicle2.steeringBehaviors.interpose(vehicle1, vehicle3);
+    sf::Vector2f steeringForceV2 = interposeForce;
+
+    // V3
+    sf::Vector2f steeringForceV3 = sf::Vector2f(100,0);
 
     vehicle1.update(dt, steeringForceV1, window.getSize());
     vehicle2.update(dt, steeringForceV2, window.getSize());
+    vehicle3.update(dt, steeringForceV3, window.getSize());
 }
 
 void Game::render()
@@ -83,6 +89,7 @@ void Game::render()
     window.clear(sf::Color::Black);
     vehicle1.render(window);
     vehicle2.render(window);
+    vehicle3.render(window);
 
     for (const auto& obstacle : obstacles)
     {

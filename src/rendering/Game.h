@@ -29,6 +29,7 @@ private:
     sf::Clock clock;
     Vehicle vehicle1;
     Vehicle vehicle2;
+    Vehicle vehicle3;
     std::vector<std::unique_ptr<Obstacle>> obstacles;
     std::vector<std::unique_ptr<Wall>> walls;
 };
