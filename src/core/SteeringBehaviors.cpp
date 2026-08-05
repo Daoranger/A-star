@@ -236,6 +236,37 @@ sf::Vector2f SteeringBehaviors::interpose(const Vehicle &agentA, const Vehicle &
     return seek(midPoint);
 }
 
+sf::Vector2f SteeringBehaviors::hide(const Vehicle &target, const std::vector<std::unique_ptr<Obstacle>> &obstacles)
+{
+    float distanceToClosest = std::numeric_limits<float>::max();
+    sf::Vector2f bestHidingSpot;
+
+    // loop through all obstacles to find closest hiding spot
+    for (const auto& obstacle : obstacles)
+    {
+        // calculate the hiding spot for this obstacle
+        sf::Vector2f hidingSpot = getHidingPositions(obstacle->getPosition(), obstacle->getCollisionRadius(), target.position);
+
+        // calculate squared distance to find closest hiding spot
+        float distX =  (hidingSpot.x - vehicle_.position.x);
+        float distY = (hidingSpot.y - vehicle_.position.y);
+        float dist = distX * distX + distY + distY;
+
+        if (dist < distanceToClosest)
+        {
+            distanceToClosest = dist;
+            bestHidingSpot = hidingSpot;
+        }
+
+        if (distanceToClosest == std::numeric_limits<float>::max())
+        {
+            return evade(target);
+        }
+
+        return arrive(bestHidingSpot);
+    }
+}
+
 sf::Vector2f SteeringBehaviors::pointToWorldSpace(sf::Vector2f targetLocal)
 {
     sf::Vector2f heading = vehicle_.heading();
@@ -354,7 +385,7 @@ sf::Vector2f SteeringBehaviors::getHidingPositions(const sf::Vector2f &obstacleP
 
     // calculate the heading toward the object from target
     sf::Vector2f targetToObstacle = (obstaclePos - targetPos).normalized();
-    
 
-
+    // scale it to size and add the obstacle's positon to get hiding spot
+    return (targetToObstacle * distanceAway) + obstaclePos;
 }

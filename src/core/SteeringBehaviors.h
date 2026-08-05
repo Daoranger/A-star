@@ -25,6 +25,7 @@ public:
     sf::Vector2f obstacleAvoidance(const std::vector<std::unique_ptr<Obstacle>>& obstacles);
     sf::Vector2f wallAvoidance(const std::vector<std::unique_ptr<Wall>>& walls);
     sf::Vector2f interpose(const Vehicle& agentA, const Vehicle& agentB);
+    sf::Vector2f hide(const Vehicle& target, const std::vector<std::unique_ptr<Obstacle>>& obstacles);
 
     float wanderRadius = 30.0f;
     float wanderDistance = 100.0f;

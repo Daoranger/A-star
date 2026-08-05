@@ -70,17 +70,20 @@ void Game::update()
     sf::Vector2f steeringForceV1 = sf::Vector2f(100,0);
 
     // V2
-    sf::Vector2f seekForce = vehicle2.steeringBehaviors.seek(target);
-    sf::Vector2f wallAvoidForce = vehicle2.steeringBehaviors.wallAvoidance(walls);
-    sf::Vector2f obstacleAvoidForce = vehicle2.steeringBehaviors.obstacleAvoidance(obstacles);
-    sf::Vector2f interposeForce = vehicle2.steeringBehaviors.interpose(vehicle1, vehicle3);
-    sf::Vector2f steeringForceV2 = interposeForce;
+    // sf::Vector2f seekForce = vehicle2.steeringBehaviors.seek(target);
+    // sf::Vector2f wallAvoidForce = vehicle2.steeringBehaviors.wallAvoidance(walls);
+    // sf::Vector2f obstacleAvoidForce = vehicle2.steeringBehaviors.obstacleAvoidance(obstacles);
+    // sf::Vector2f interposeForce = vehicle2.steeringBehaviors.interpose(vehicle1, vehicle3);
+    // sf::Vector2f steeringForceV2 = interposeForce;
 
     // V3
-    sf::Vector2f steeringForceV3 = sf::Vector2f(100,0);
+    sf::Vector2f obstacleAvoidForce = vehicle3.steeringBehaviors.obstacleAvoidance(obstacles);
+    sf::Vector2f hideForce = vehicle3.steeringBehaviors.hide(vehicle1, obstacles);
+    sf::Vector2f steeringForceV3 = obstacleAvoidForce + hideForce;
 
-    vehicle1.update(dt, steeringForceV1, window.getSize());
-    vehicle2.update(dt, steeringForceV2, window.getSize());
+    //vehicle1.update(dt, steeringForceV1, window.getSize());
+    //vehicle1.position = target;
+    //vehicle2.update(dt, steeringForceV2, window.getSize());
     vehicle3.update(dt, steeringForceV3, window.getSize());
 }
 
@@ -88,25 +91,26 @@ void Game::render()
 {
     window.clear(sf::Color::Black);
     vehicle1.render(window);
-    vehicle2.render(window);
+    //vehicle2.render(window);
     vehicle3.render(window);
 
+    // drawing obst
     for (const auto& obstacle : obstacles)
     {
         obstacle->render(window);
     }
 
-    for (auto& wall : walls)
-    {
-        wall->render(window);
-    }
+    // for (auto& wall : walls)
+    // {
+    //     wall->render(window);
+    // }
 
     window.display();
 }
 
 void Game::spawnObstacles(int amount)
 {
-    for (int i = 0; i < amount; i++)
+    for (int i = 0; i < 1; i++)
     {
         auto obstacle = std::make_unique<Obstacle>(randomInRange(50.0f, 200.0f));
         float posX = randomInRange(0, 1920);
