@@ -32,6 +32,7 @@ private:
     Vehicle vehicle3;
     std::vector<std::unique_ptr<Obstacle>> obstacles;
     std::vector<std::unique_ptr<Wall>> walls;
+    Path patrolPath_;
 };
 
 #endif //STEERINGBEHAVIORS_GAME_H

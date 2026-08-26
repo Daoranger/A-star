@@ -6,6 +6,7 @@
 #define STEERINGBEHAVIORS_STEERINGBEHAVIORS_H
 
 #include "Obstacle.h"
+#include "Path.h"
 #include "Wall.h"
 #include "SFML/System/Vector2.hpp"
 
@@ -26,6 +27,7 @@ public:
     sf::Vector2f wallAvoidance(const std::vector<std::unique_ptr<Wall>>& walls);
     sf::Vector2f interpose(const Vehicle& agentA, const Vehicle& agentB);
     sf::Vector2f hide(const Vehicle& target, const std::vector<std::unique_ptr<Obstacle>>& obstacles);
+    sf::Vector2f followPath();
 
     float wanderRadius = 30.0f;
     float wanderDistance = 100.0f;
@@ -37,8 +39,14 @@ public:
     // only store endpoints
     std::vector<sf::Vector2f> feelers;
 
+    void setPath(Path* path) { path_ = path; }
+
+
 private:
     Vehicle& vehicle_;
+    Path* path_;
+    double waypointSeekDistSq_ = 100.0;
+
     sf::Vector2f pointToWorldSpace(sf::Vector2f targetLocal);
     sf::Vector2f pointToLocalSpace(sf::Vector2f targetWorld);
     sf::Vector2f vectorToWorldSpace(sf::Vector2f vecLocal);

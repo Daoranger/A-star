@@ -11,7 +11,13 @@ Game::Game()
     , vehicle1(sf::Vector2f(300, 540))
     , vehicle2(sf::Vector2f(100, 100))
     , vehicle3(sf::Vector2f(300, 1080))
+    , patrolPath_(std::vector<sf::Vector2f> {{1200.f, 700.f},
+      {1900.f, 700.f},
+      {1900.f, 1200.f},
+      {1200.f, 1200.f}}, true)
 {
+
+    vehicle2.steeringBehaviors.setPath(&patrolPath_);
 
     spawnObstacles(3);
 
@@ -75,6 +81,8 @@ void Game::update()
     // sf::Vector2f obstacleAvoidForce = vehicle2.steeringBehaviors.obstacleAvoidance(obstacles);
     // sf::Vector2f interposeForce = vehicle2.steeringBehaviors.interpose(vehicle1, vehicle3);
     // sf::Vector2f steeringForceV2 = interposeForce;
+    sf::Vector2f followForce = vehicle2.steeringBehaviors.followPath();
+    vehicle2.update(dt, followForce, window.getSize());
 
     // V3
     sf::Vector2f obstacleAvoidForce = vehicle3.steeringBehaviors.obstacleAvoidance(obstacles);
@@ -90,15 +98,26 @@ void Game::update()
 void Game::render()
 {
     window.clear(sf::Color::Black);
-    vehicle1.render(window);
-    //vehicle2.render(window);
-    vehicle3.render(window);
+    //vehicle1.render(window);
+    vehicle2.render(window);
+    //vehicle3.render(window);
+
+    // draw patrol path waypoints
+    for (const auto& point : patrolPath_.waypoints_)
+    {
+        sf::CircleShape marker(8.f);
+        marker.setFillColor(sf::Color::Red);
+        marker.setOrigin(sf::Vector2f(8.f, 8.f)); // center the circle on the point
+        marker.setPosition(point);
+        window.draw(marker);
+    }
 
     // drawing obst
     for (const auto& obstacle : obstacles)
     {
         obstacle->render(window);
     }
+
 
     // for (auto& wall : walls)
     // {

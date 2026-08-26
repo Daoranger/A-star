@@ -267,6 +267,29 @@ sf::Vector2f SteeringBehaviors::hide(const Vehicle &target, const std::vector<st
     }
 }
 
+sf::Vector2f SteeringBehaviors::followPath()
+{
+    if (path_->empty())
+        return sf::Vector2f{0.f, 0.f};
+
+    sf::Vector2f toWaypoint = path_->currentWaypoint() - vehicle_.position;
+    float distSq = toWaypoint.x * toWaypoint.x + toWaypoint.y * toWaypoint.y;
+
+    if (distSq < waypointSeekDistSq_)
+    {
+        path_->setNextWaypoint();
+    }
+
+    if (!path_->finished())
+    {
+        return seek(path_->currentWaypoint());
+    }
+    else
+    {
+        return arrive(path_->currentWaypoint());
+    }
+}
+
 sf::Vector2f SteeringBehaviors::pointToWorldSpace(sf::Vector2f targetLocal)
 {
     sf::Vector2f heading = vehicle_.heading();
