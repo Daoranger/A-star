@@ -28,6 +28,7 @@ public:
     sf::Vector2f interpose(const Vehicle& agentA, const Vehicle& agentB);
     sf::Vector2f hide(const Vehicle& target, const std::vector<std::unique_ptr<Obstacle>>& obstacles);
     sf::Vector2f followPath();
+    sf::Vector2f offsetPursuit(const Vehicle& leader, sf::Vector2f offset);
 
     float wanderRadius = 30.0f;
     float wanderDistance = 100.0f;
@@ -48,6 +49,7 @@ private:
     double waypointSeekDistSq_ = 100.0;
 
     sf::Vector2f pointToWorldSpace(sf::Vector2f targetLocal);
+    sf::Vector2f pointToWorldSpace(sf::Vector2f targetLocal, const Vehicle& referenceVehicle);
     sf::Vector2f pointToLocalSpace(sf::Vector2f targetWorld);
     sf::Vector2f vectorToWorldSpace(sf::Vector2f vecLocal);
     bool lineIntersection2D(sf::Vector2f a, sf::Vector2f b, sf::Vector2f c, sf::Vector2f d, float& dist, sf::Vector2f& point);

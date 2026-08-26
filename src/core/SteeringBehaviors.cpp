@@ -290,11 +290,33 @@ sf::Vector2f SteeringBehaviors::followPath()
     }
 }
 
+sf::Vector2f SteeringBehaviors::offsetPursuit(const Vehicle &leader, sf::Vector2f offset)
+{
+    sf::Vector2f worldOffsetPos = pointToWorldSpace(offset, leader);
+    sf::Vector2f toOffset = worldOffsetPos - vehicle_.position;
+
+    float lookAheadTime = toOffset.length() / (vehicle_.maxSpeed + leader.speed());
+
+    return seek(worldOffsetPos + leader.velocity * lookAheadTime);
+}
+
 sf::Vector2f SteeringBehaviors::pointToWorldSpace(sf::Vector2f targetLocal)
 {
     sf::Vector2f heading = vehicle_.heading();
     sf::Vector2f side = vehicle_.side();
     sf::Vector2f position = vehicle_.position;
+
+    return sf::Vector2f(
+        position.x + heading.x * targetLocal.x + side.x * targetLocal.y,
+        position.y + heading.y * targetLocal.x + side.y * targetLocal.y
+    );
+}
+
+sf::Vector2f SteeringBehaviors::pointToWorldSpace(sf::Vector2f targetLocal, const Vehicle &referenceVehicle)
+{
+    sf::Vector2f heading = referenceVehicle.heading();
+    sf::Vector2f side = referenceVehicle.side();
+    sf::Vector2f position = referenceVehicle.position;
 
     return sf::Vector2f(
         position.x + heading.x * targetLocal.x + side.x * targetLocal.y,

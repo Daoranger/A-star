@@ -85,14 +85,9 @@ void Game::update()
     vehicle2.update(dt, followForce, window.getSize());
 
     // V3
-    sf::Vector2f obstacleAvoidForce = vehicle3.steeringBehaviors.obstacleAvoidance(obstacles);
-    sf::Vector2f hideForce = vehicle3.steeringBehaviors.hide(vehicle1, obstacles);
-    sf::Vector2f steeringForceV3 = obstacleAvoidForce + hideForce;
-
-    //vehicle1.update(dt, steeringForceV1, window.getSize());
-    //vehicle1.position = target;
-    //vehicle2.update(dt, steeringForceV2, window.getSize());
-    vehicle3.update(dt, steeringForceV3, window.getSize());
+    sf::Vector2f offset(-100.f, 0.f); // 100 units directly behind the leader
+    sf::Vector2f offsetPursuitForce = vehicle3.steeringBehaviors.offsetPursuit(vehicle2, offset);
+    vehicle3.update(dt, offsetPursuitForce, window.getSize());
 }
 
 void Game::render()
@@ -100,7 +95,7 @@ void Game::render()
     window.clear(sf::Color::Black);
     //vehicle1.render(window);
     vehicle2.render(window);
-    //vehicle3.render(window);
+    vehicle3.render(window);
 
     // draw patrol path waypoints
     for (const auto& point : patrolPath_.waypoints_)
