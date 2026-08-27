@@ -10,9 +10,9 @@
 
 Game::Game()
     : window(sf::VideoMode(sf::Vector2u(3072, 1920)), "Steering Behaviors")
-    , vehicle1(sf::Vector2f(300, 540))
-    , vehicle2(sf::Vector2f(100, 100))
-    , vehicle3(sf::Vector2f(300, 1080))
+    , vehicle1(sf::Vector2f(1400, 900))
+    , vehicle2(sf::Vector2f(1500, 950))
+    , vehicle3(sf::Vector2f(1450, 1000))
     , patrolPath_(std::vector<sf::Vector2f> {{1200.f, 700.f},
       {1900.f, 700.f},
       {1900.f, 1200.f},
@@ -77,21 +77,14 @@ void Game::update()
     float dt = clock.restart().asSeconds();
     sf::Vector2f target = sf::Vector2f(sf::Mouse::getPosition(window));
 
-    // V1
-    sf::Vector2f separationForce = vehicle1.steeringBehaviors.separation(vehicles_) * 2000.0f;
-    sf::Vector2f alignmentForce = vehicle1.steeringBehaviors.alignment(vehicles_) * 2000.0f;
-    sf::Vector2f cohesionForce = vehicle1.steeringBehaviors.cohesion(vehicles_);
-    vehicle1.update(dt, cohesionForce, window.getSize());
+    sf::Vector2f flockForce1 = vehicle1.steeringBehaviors.flock(vehicles_);
+    vehicle1.update(dt, flockForce1, window.getSize());
 
-    // V2
-    //sf::Vector2f followForce = vehicle2.steeringBehaviors.followPath();
-    sf::Vector2f seekForce = vehicle2.steeringBehaviors.seek(target);
-    vehicle2.update(dt, seekForce, window.getSize());
+    sf::Vector2f flockForce2 = vehicle2.steeringBehaviors.flock(vehicles_);
+    vehicle2.update(dt, flockForce2, window.getSize());
 
-    // V3
-    //sf::Vector2f offset(-100.f, 0.f); // 100 units directly behind the leader
-    //sf::Vector2f offsetPursuitForce = vehicle3.steeringBehaviors.offsetPursuit(vehicle2, offset);
-    //vehicle3.update(dt, offsetPursuitForce, window.getSize());
+    sf::Vector2f flockForce3 = vehicle3.steeringBehaviors.flock(vehicles_);
+    vehicle3.update(dt, flockForce3, window.getSize());
 }
 
 void Game::render()
@@ -102,20 +95,20 @@ void Game::render()
     vehicle3.render(window);
 
     // draw patrol path waypoints
-    for (const auto& point : patrolPath_.waypoints_)
-    {
-        sf::CircleShape marker(8.f);
-        marker.setFillColor(sf::Color::Red);
-        marker.setOrigin(sf::Vector2f(8.f, 8.f)); // center the circle on the point
-        marker.setPosition(point);
-        window.draw(marker);
-    }
+    // for (const auto& point : patrolPath_.waypoints_)
+    // {
+    //     sf::CircleShape marker(8.f);
+    //     marker.setFillColor(sf::Color::Red);
+    //     marker.setOrigin(sf::Vector2f(8.f, 8.f)); // center the circle on the point
+    //     marker.setPosition(point);
+    //     window.draw(marker);
+    // }
 
     // drawing obst
-    for (const auto& obstacle : obstacles)
-    {
-        obstacle->render(window);
-    }
+    // for (const auto& obstacle : obstacles)
+    // {
+    //     obstacle->render(window);
+    // }
 
 
     // for (auto& wall : walls)

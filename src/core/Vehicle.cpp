@@ -11,7 +11,7 @@ Vehicle::Vehicle(sf::Vector2f startPos)
     : mass(1.0f)
     , position(startPos)
     , velocity(sf::Vector2f(0, 0))
-    , maxSpeed(100.0f)
+    , maxSpeed(250.0f)
     , maxForce(100.0f)
     , texture_("assets/f22.png")
     , sprite_(texture_)
@@ -62,23 +62,23 @@ void Vehicle::render(sf::RenderWindow& window)
     window.draw(sprite_);
 
     // DEBUG: collision circle
-    sf::CircleShape collision_circle(collision_radius_);
-    collision_circle.setOrigin(sf::Vector2f(collision_radius_, collision_radius_));
-    collision_circle.setPosition(position);
-    collision_circle.setFillColor(sf::Color::Transparent);
-    collision_circle.setOutlineColor(sf::Color::White);
-    collision_circle.setOutlineThickness(3.0f);
-    window.draw(collision_circle);
+    // sf::CircleShape collision_circle(collision_radius_);
+    // collision_circle.setOrigin(sf::Vector2f(collision_radius_, collision_radius_));
+    // collision_circle.setPosition(position);
+    // collision_circle.setFillColor(sf::Color::Transparent);
+    // collision_circle.setOutlineColor(sf::Color::White);
+    // collision_circle.setOutlineThickness(3.0f);
+    // window.draw(collision_circle);
 
     // DEBUG: detection box
-    sf::RectangleShape detection_box(sf::Vector2f(detection_box_length_, collision_radius_ * 2));
-    detection_box.setOrigin(sf::Vector2f(0, collision_radius_));
-    detection_box.setPosition(position);
-    detection_box.setRotation(sprite_.getRotation() - sf::degrees(90.0f));
-    detection_box.setFillColor(sf::Color::Transparent);
-    detection_box.setOutlineColor(sf::Color::Green);
-    detection_box.setOutlineThickness(3.0f);
-    window.draw(detection_box);
+    // sf::RectangleShape detection_box(sf::Vector2f(detection_box_length_, collision_radius_ * 2));
+    // detection_box.setOrigin(sf::Vector2f(0, collision_radius_));
+    // detection_box.setPosition(position);
+    // detection_box.setRotation(sprite_.getRotation() - sf::degrees(90.0f));
+    // detection_box.setFillColor(sf::Color::Transparent);
+    // detection_box.setOutlineColor(sf::Color::Green);
+    // detection_box.setOutlineThickness(3.0f);
+    // window.draw(detection_box);
 
 
     // DEBUG FOR WANDER

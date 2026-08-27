@@ -32,6 +32,7 @@ public:
     sf::Vector2f separation(const std::vector<Vehicle*>& vehicles);
     sf::Vector2f alignment(const std::vector<Vehicle*>& vehicles);
     sf::Vector2f cohesion(const std::vector<Vehicle*>& vehicles);
+    sf::Vector2f flock(const std::vector<Vehicle*>& vehicles);
 
 
     float wanderRadius = 30.0f;
@@ -41,13 +42,16 @@ public:
     float middleFeelerLength = 300.0f;
     float sideFeelerLength = 200.0f;
     double waypointSeekDistSq = 100.0;
-    float neighborRadius = 300.0f;
 
     // only store endpoints
     std::vector<sf::Vector2f> feelers;
 
     void setPath(Path* path) { path_ = path; }
 
+    float neighborRadius = 300.0f;
+    float separationWeight = 2000.0f;
+    float alignmentWeight = 15.0f;
+    float cohesionWeight = 0.5f;
 
 private:
     Vehicle& vehicle_;

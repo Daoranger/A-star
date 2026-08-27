@@ -302,8 +302,6 @@ sf::Vector2f SteeringBehaviors::offsetPursuit(const Vehicle &leader, sf::Vector2
 
 sf::Vector2f SteeringBehaviors::separation(const std::vector<Vehicle*>& vehicles)
 {
-    tagNeighborVehicleInRange(vehicles, neighborRadius);
-
     sf::Vector2f steeringForce(0.0f, 0.0f);
 
     for (Vehicle* neighbor : vehicles)
@@ -324,8 +322,6 @@ sf::Vector2f SteeringBehaviors::separation(const std::vector<Vehicle*>& vehicles
 
 sf::Vector2f SteeringBehaviors::alignment(const std::vector<Vehicle *> &vehicles)
 {
-    tagNeighborVehicleInRange(vehicles, neighborRadius);
-
     sf::Vector2f averageHeading(0.0f, 0.0f);
     int neighborCount = 0;
 
@@ -350,8 +346,6 @@ sf::Vector2f SteeringBehaviors::alignment(const std::vector<Vehicle *> &vehicles
 
 sf::Vector2f SteeringBehaviors::cohesion(const std::vector<Vehicle *> &vehicles)
 {
-    tagNeighborVehicleInRange(vehicles, neighborRadius);
-
     sf::Vector2f centerOfMass(0.0f, 0.0f);
     sf::Vector2f steeringForce(0.0f, 0.0f);
     int neighborCount = 0;
@@ -372,6 +366,18 @@ sf::Vector2f SteeringBehaviors::cohesion(const std::vector<Vehicle *> &vehicles)
     }
 
     return steeringForce;
+}
+
+sf::Vector2f SteeringBehaviors::flock(const std::vector<Vehicle *> &vehicles)
+{
+    tagNeighborVehicleInRange(vehicles, neighborRadius);
+
+    sf::Vector2f separationForce = separation(vehicles) * separationWeight;
+    sf::Vector2f alignmentForce = alignment(vehicles) * alignmentWeight;
+    sf::Vector2f cohesionForce = cohesion(vehicles) * cohesionWeight;
+    sf::Vector2f wanderForce = wander();
+
+    return separationForce + alignmentForce + cohesionForce + wanderForce;
 }
 
 sf::Vector2f SteeringBehaviors::pointToWorldSpace(sf::Vector2f targetLocal)
