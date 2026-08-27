@@ -275,7 +275,7 @@ sf::Vector2f SteeringBehaviors::followPath()
     sf::Vector2f toWaypoint = path_->currentWaypoint() - vehicle_.position;
     float distSq = toWaypoint.x * toWaypoint.x + toWaypoint.y * toWaypoint.y;
 
-    if (distSq < waypointSeekDistSq_)
+    if (distSq < waypointSeekDistSq)
     {
         path_->setNextWaypoint();
     }
@@ -298,6 +298,80 @@ sf::Vector2f SteeringBehaviors::offsetPursuit(const Vehicle &leader, sf::Vector2
     float lookAheadTime = toOffset.length() / (vehicle_.maxSpeed + leader.speed());
 
     return seek(worldOffsetPos + leader.velocity * lookAheadTime);
+}
+
+sf::Vector2f SteeringBehaviors::separation(const std::vector<Vehicle*>& vehicles)
+{
+    tagNeighborVehicleInRange(vehicles, neighborRadius);
+
+    sf::Vector2f steeringForce(0.0f, 0.0f);
+
+    for (Vehicle* neighbor : vehicles)
+    {
+        if (neighbor->isTagged() && neighbor != &vehicle_)
+        {
+            sf::Vector2f toAgent = vehicle_.position - neighbor->position;
+
+            float length = toAgent.length();
+            if (length > 0.0001f) // avoid divide by zero
+            {
+                steeringForce += toAgent.normalized() / length;
+            }
+        }
+    }
+    return steeringForce;
+}
+
+sf::Vector2f SteeringBehaviors::alignment(const std::vector<Vehicle *> &vehicles)
+{
+    tagNeighborVehicleInRange(vehicles, neighborRadius);
+
+    sf::Vector2f averageHeading(0.0f, 0.0f);
+    int neighborCount = 0;
+
+    for (Vehicle* neighbor : vehicles)
+    {
+        if (neighbor->isTagged() && neighbor != &vehicle_)
+        {
+            averageHeading += neighbor->heading();
+            ++neighborCount;
+        }
+    }
+
+    // if neighborhood contained one or more vehicles, average their heading vectors
+    if (neighborCount > 0)
+    {
+        averageHeading /= static_cast<float>(neighborCount);
+        averageHeading -= vehicle_.heading();
+    }
+
+    return averageHeading;
+}
+
+sf::Vector2f SteeringBehaviors::cohesion(const std::vector<Vehicle *> &vehicles)
+{
+    tagNeighborVehicleInRange(vehicles, neighborRadius);
+
+    sf::Vector2f centerOfMass(0.0f, 0.0f);
+    sf::Vector2f steeringForce(0.0f, 0.0f);
+    int neighborCount = 0;
+
+    for (Vehicle* neighbor : vehicles)
+    {
+        if (neighbor->isTagged() && neighbor != &vehicle_)
+        {
+            centerOfMass += neighbor->position;
+            ++neighborCount;
+        }
+    }
+
+    if (neighborCount > 0)
+    {
+        centerOfMass /= static_cast<float>(neighborCount);
+        steeringForce = seek(centerOfMass);
+    }
+
+    return steeringForce;
 }
 
 sf::Vector2f SteeringBehaviors::pointToWorldSpace(sf::Vector2f targetLocal)
@@ -433,4 +507,25 @@ sf::Vector2f SteeringBehaviors::getHidingPositions(const sf::Vector2f &obstacleP
 
     // scale it to size and add the obstacle's positon to get hiding spot
     return (targetToObstacle * distanceAway) + obstaclePos;
+}
+
+void SteeringBehaviors::tagNeighborVehicleInRange(const std::vector<Vehicle *> &vehicles, float range)
+{
+    float rangeSqrt = range * range;
+    for (Vehicle* vehicle : vehicles)
+    {
+        vehicle->untag();
+
+        // skip tagging ourselves as our own neighbor
+        if (vehicle == &vehicle_)
+            continue;
+
+        sf::Vector2f dist = vehicle->position - vehicle_.position;
+        float distSqrt = dist.x * dist.x + dist.y * dist.y;
+
+        if (distSqrt < rangeSqrt)
+        {
+            vehicle->tag();
+        }
+    }
 }

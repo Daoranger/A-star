@@ -29,6 +29,10 @@ public:
     sf::Vector2f hide(const Vehicle& target, const std::vector<std::unique_ptr<Obstacle>>& obstacles);
     sf::Vector2f followPath();
     sf::Vector2f offsetPursuit(const Vehicle& leader, sf::Vector2f offset);
+    sf::Vector2f separation(const std::vector<Vehicle*>& vehicles);
+    sf::Vector2f alignment(const std::vector<Vehicle*>& vehicles);
+    sf::Vector2f cohesion(const std::vector<Vehicle*>& vehicles);
+
 
     float wanderRadius = 30.0f;
     float wanderDistance = 100.0f;
@@ -36,6 +40,8 @@ public:
     sf::Vector2f wanderTarget;
     float middleFeelerLength = 300.0f;
     float sideFeelerLength = 200.0f;
+    double waypointSeekDistSq = 100.0;
+    float neighborRadius = 300.0f;
 
     // only store endpoints
     std::vector<sf::Vector2f> feelers;
@@ -46,7 +52,6 @@ public:
 private:
     Vehicle& vehicle_;
     Path* path_;
-    double waypointSeekDistSq_ = 100.0;
 
     sf::Vector2f pointToWorldSpace(sf::Vector2f targetLocal);
     sf::Vector2f pointToWorldSpace(sf::Vector2f targetLocal, const Vehicle& referenceVehicle);
@@ -57,6 +62,7 @@ private:
     void createFeelers();
     sf::Vector2f rotateVector(const sf::Vector2f& vector, float angleDegrees);
     sf::Vector2f getHidingPositions(const sf::Vector2f& obstaclePos, const float obstacleRadius, const sf::Vector2f& targetPos);
+    void tagNeighborVehicleInRange(const std::vector<Vehicle*>& vehicles, float range);
 };
 
 #endif //STEERINGBEHAVIORS_STEERINGBEHAVIORS_H

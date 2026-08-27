@@ -4,6 +4,8 @@
 
 #include "Game.h"
 
+#include <iostream>
+
 #include "SFML/Graphics/CircleShape.hpp"
 
 Game::Game()
@@ -17,6 +19,7 @@ Game::Game()
       {1200.f, 1200.f}}, true)
 {
 
+    vehicles_ = {&vehicle1, &vehicle2, &vehicle3};
     vehicle2.steeringBehaviors.setPath(&patrolPath_);
 
     spawnObstacles(3);
@@ -69,31 +72,32 @@ void Game::processEvents()
 
 void Game::update()
 {
+
+    // for mouse as target
     float dt = clock.restart().asSeconds();
     sf::Vector2f target = sf::Vector2f(sf::Mouse::getPosition(window));
 
     // V1
-    sf::Vector2f steeringForceV1 = sf::Vector2f(100,0);
+    sf::Vector2f separationForce = vehicle1.steeringBehaviors.separation(vehicles_) * 2000.0f;
+    sf::Vector2f alignmentForce = vehicle1.steeringBehaviors.alignment(vehicles_) * 2000.0f;
+    sf::Vector2f cohesionForce = vehicle1.steeringBehaviors.cohesion(vehicles_);
+    vehicle1.update(dt, cohesionForce, window.getSize());
 
     // V2
-    // sf::Vector2f seekForce = vehicle2.steeringBehaviors.seek(target);
-    // sf::Vector2f wallAvoidForce = vehicle2.steeringBehaviors.wallAvoidance(walls);
-    // sf::Vector2f obstacleAvoidForce = vehicle2.steeringBehaviors.obstacleAvoidance(obstacles);
-    // sf::Vector2f interposeForce = vehicle2.steeringBehaviors.interpose(vehicle1, vehicle3);
-    // sf::Vector2f steeringForceV2 = interposeForce;
-    sf::Vector2f followForce = vehicle2.steeringBehaviors.followPath();
-    vehicle2.update(dt, followForce, window.getSize());
+    //sf::Vector2f followForce = vehicle2.steeringBehaviors.followPath();
+    sf::Vector2f seekForce = vehicle2.steeringBehaviors.seek(target);
+    vehicle2.update(dt, seekForce, window.getSize());
 
     // V3
-    sf::Vector2f offset(-100.f, 0.f); // 100 units directly behind the leader
-    sf::Vector2f offsetPursuitForce = vehicle3.steeringBehaviors.offsetPursuit(vehicle2, offset);
-    vehicle3.update(dt, offsetPursuitForce, window.getSize());
+    //sf::Vector2f offset(-100.f, 0.f); // 100 units directly behind the leader
+    //sf::Vector2f offsetPursuitForce = vehicle3.steeringBehaviors.offsetPursuit(vehicle2, offset);
+    //vehicle3.update(dt, offsetPursuitForce, window.getSize());
 }
 
 void Game::render()
 {
     window.clear(sf::Color::Black);
-    //vehicle1.render(window);
+    vehicle1.render(window);
     vehicle2.render(window);
     vehicle3.render(window);
 

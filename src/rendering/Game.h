@@ -33,6 +33,7 @@ private:
     std::vector<std::unique_ptr<Obstacle>> obstacles;
     std::vector<std::unique_ptr<Wall>> walls;
     Path patrolPath_;
+    std::vector<Vehicle*> vehicles_;
 };
 
 #endif //STEERINGBEHAVIORS_GAME_H

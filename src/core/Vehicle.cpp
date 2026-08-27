@@ -116,4 +116,13 @@ void Vehicle::render(sf::RenderWindow& window)
         };
         window.draw(line.data(), line.size(), sf::PrimitiveType::Lines);
     }
+
+    // DEBUG: neighbor radius for flocking
+    sf::CircleShape neighborCircle(steeringBehaviors.neighborRadius);
+    neighborCircle.setOrigin(sf::Vector2f(steeringBehaviors.neighborRadius, steeringBehaviors.neighborRadius));
+    neighborCircle.setPosition(position);
+    neighborCircle.setFillColor(sf::Color::Transparent);
+    neighborCircle.setOutlineColor(sf::Color::Magenta);
+    neighborCircle.setOutlineThickness(2.0f);
+    window.draw(neighborCircle);
 }

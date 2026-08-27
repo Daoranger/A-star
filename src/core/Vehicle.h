@@ -41,11 +41,16 @@ public:
     void update(float dt, sf::Vector2f steeringForce, sf::Vector2u windowSize);
     void render(sf::RenderWindow& window);
 
+    void tag() { isTagged_ = true; }
+    void untag() { isTagged_ = false; }
+    bool isTagged() const { return isTagged_; }
+
 private:
     sf::Vector2f heading_ = {1.f, 0.f};
     sf::Vector2f side_ = {0.f, 1.f};
     sf::Texture texture_;
     sf::Sprite sprite_;
+    bool isTagged_ = false;
 };
 
 #endif //STEERINGBEHAVIORS_VEHICLE_H
