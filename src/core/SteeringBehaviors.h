@@ -51,7 +51,7 @@ public:
     float neighborRadius = 300.0f;
     float separationWeight = 2000.0f;
     float alignmentWeight = 15.0f;
-    float cohesionWeight = 0.5f;
+    float cohesionWeight = 0.4f;
 
 private:
     Vehicle& vehicle_;
